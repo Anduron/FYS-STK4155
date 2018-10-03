@@ -1,0 +1,15 @@
+Coulomb interaction:
+n = 400, omg_r = 0.01, rho_n = 40 => GSE = 0.105813
+n = 400, omg_r = 0.5, rho_n = 5 => GSE = 2.23096
+n = 400, omg_r = 1, rho_n = 3 => GSE = 4.07938
+n = 400, omg_r = 5, rho_n = 2 => GSE = 17.4485
+
+No Coulomb interaction:
+n = 400, omg_r = 0.01, rho_n = 40 => GSE = 0.03
+n = 400, omg_r = 0.5, rho_n = 5 => GSE = 1.50029
+n = 400, omg_r = 1, rho_n = 3 => GSE = 3.01171
+n = 400, omg_r = 5, rho_n = 2 => GSE = 14.9998
+
+Compared results:
+n = 400, omg_r = 0.25, rho_n = 10 => GSE = 1.24999, ANALYTIC = 0.6250*2 = 1.25
+n = 400, omg_r = 0.05, rho_n = 20 => GSE = 0.349999, ANALYTIC = 0.1750*2 = 0.35
