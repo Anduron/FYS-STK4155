@@ -15,20 +15,15 @@ iteration = 0
 for line in n:
 
     x[iteration] = line.split()[0]
-    x[iteration] = log(x[iteration])
     u[iteration] = line.split()[1]
     error[iteration] = line.split()[2]
-    error[iteration] = log(error[iteration])
     iteration += 1
 
 
-plt.plot(x , error)
+plt.plot(x , u)
+plt.plot(0,0,"o")
 
-x2 = np.linspace(1,6,len(n))
-y2 = 2*x2
-
-plt.plot(x2,y2, "--")
-plt.xlabel("$\log(n)$",size = 15); plt.ylabel("$\log(iterations)$",size=15)
+#plt.xlabel("$\log(n)$",size = 15); plt.ylabel("$\log(iterations)$",size=15)
 plt.title("Iterations as function of matrix size n",size=15)
-plt.legend(["$\log_{10}(iterations(n))$", "$y = 2\log_{10}(n)$"], prop={'size':15})
+#plt.legend(["$\log_{10}(iterations(n))$", "$y = 2\log_{10}(n)$"], prop={'size':15})
 plt.show()
