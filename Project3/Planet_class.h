@@ -25,10 +25,12 @@ public:
   Planet();
 
   //Constructior with variables
-  Planet(Position, Velocity, Mass);
+  Planet(vec Position, vec Velocity, double Mass);
 
 
   //Destructor
   ~Planet() {}
 
 };
+
+#endif /* Planet_H */

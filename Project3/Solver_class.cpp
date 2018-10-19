@@ -25,9 +25,7 @@ Verlet::MethodV(mat pos, mat vel, vec mass, )
 {
 
 
-  for (i = 0; i < N; i++){
-
-    for (j = i + 1; j < N; j++){
+  
 
 
 
