@@ -16,7 +16,7 @@ int main(){
         //vfac = atof(argv[2]);    // factor to change the velocity
 
         Time = 24.0;    // time [years]
-        n = 10e8;    // steps
+        n = 10e7;    // steps
         timestep = Time/n;
 
         // constants
@@ -45,8 +45,8 @@ int main(){
                 outfile << Jupiter.position[1] << endl;
            }
            outfile.close();*/
-        // ofstream outfile;
-        // outfile.open("test.txt");
+        ofstream outfile;
+        outfile.open("test.txt");
         clock_t t;
         t_0 = clock();
 
@@ -54,18 +54,20 @@ int main(){
                 solver earth(G, timestep, Earth, Sun);
                 earth.euler(G, timestep, Earth, Sun);
 
-                // outfile << Earth.position[0] << " ";
-                // outfile << Earth.position[1] << " ";
-                // outfile << Jupiter.position[0] << " ";
-                // outfile << Jupiter.position[1] << " ";
-                // outfile << Sun.position[0] << " ";
-                // outfile << Sun.position[1] << " ";
-                // outfile << Sun.angularMomentum(Earth, Jupiter) << " ";
-                // outfile << Earth.angularMomentum(Sun, Jupiter) << " ";
-                // outfile << Jupiter.angularMomentum(Earth, Sun) << endl;
+                if (){
+                      outfile << Earth.position[0] << " ";
+                      outfile << Earth.position[1] << " ";
+                      // outfile << Jupiter.position[0] << " ";
+                      // outfile << Jupiter.position[1] << " ";
+                      // outfile << Sun.position[0] << " ";
+                      // outfile << Sun.position[1] << " ";
+                      // outfile << Sun.angularMomentum(Earth, Jupiter) << " ";
+                      // outfile << Earth.angularMomentum(Sun, Jupiter) << " ";
+                      // outfile << Jupiter.angularMomentum(Earth, Sun) << endl;
+                }
         }
         t = double (clock() - t_0);
 
         cout << "Time using Euler: " << t/double(CLOCKS_PER_SEC) << "\n";
-        // outfile.close();
+        outfile.close();
 };

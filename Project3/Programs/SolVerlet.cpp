@@ -12,7 +12,7 @@ using namespace arma;
 
 int main(int argc, char *argv[]){
   double T = atoi(argv[1]);
-  double n = 10e8*T;
+  double n = 10000*T;
   double t_0;
 
   /*
@@ -73,7 +73,7 @@ int main(int argc, char *argv[]){
   // writing to file
   ofstream outfile;
   outfile.open("r3a.txt");
-  for (int i = 0; i < n-1; i+=1000000) {         //Prints results to file
+  for (int i = 0; i < n-1; i+=10) {         //Prints results to file
     outfile << x[i] << " ";
     outfile << y[i] << " ";
     outfile << z[i] << endl;
