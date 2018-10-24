@@ -12,7 +12,8 @@ using namespace arma;
 
 int main(int argc, char *argv[]){
   double T = atoi(argv[1]);
-  double n = 1000*T;
+  double n = 10e8*T;
+  double t_0;
 
   /*
   if( T>100 ){
@@ -33,7 +34,10 @@ int main(int argc, char *argv[]){
   double dt = T/n;
 
 
-  for (int i = 0; i < n-1; i++){
+  clock_t t;
+  t_0 = clock();
+
+  for (int i = 0; i < n-1; i+=1){
     r = sqrt(x(i)*x(i) + y(i)*y(i) + z(i)*z(i));
     a(i) = -G/pow(r,3);
     vx(i+1) = vx(i) + a(i)*x(i)*dt;
@@ -62,10 +66,14 @@ int main(int argc, char *argv[]){
   }
   */
 
+  t = double (clock() - t_0);
+
+  cout << "Time using Euler: " << t/double(CLOCKS_PER_SEC) << "\n";
+
   // writing to file
   ofstream outfile;
   outfile.open("r3a.txt");
-  for (int i = 0; i < n-1; i+=10) {         //Prints results to file
+  for (int i = 0; i < n-1; i+=1000000) {         //Prints results to file
     outfile << x[i] << " ";
     outfile << y[i] << " ";
     outfile << z[i] << endl;

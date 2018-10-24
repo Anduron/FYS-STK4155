@@ -1,4 +1,4 @@
-#include <"Planet_class.h">
+#include "Planet_class.h"
 
 using namespace std;
 using namespace arma;
@@ -10,7 +10,7 @@ Planet::Planet()
   M = 0;
 }
 
-Planet::Planet(Position, Velocity, Mass)
+Planet::Planet(vec Position, vec Velocity, double Mass)
 {
   pos = Position;
   vel = Velocity;

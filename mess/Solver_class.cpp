@@ -1,4 +1,4 @@
-#include <"Solver_class.h">
+#include "Solver_class.h"
 
 using namespace std;
 using namespace arma;
@@ -25,7 +25,7 @@ Verlet::MethodV(mat pos, mat vel, vec mass, )
 {
 
 
-  
+
 
 
 

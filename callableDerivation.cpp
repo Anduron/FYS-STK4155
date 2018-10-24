@@ -3,8 +3,6 @@
 #include <armadillo>
 
 using namespace std;
+using namespace arma;
 
-int main(){
-      int n;
-      return 0;
-};
+vec A = {0,0,0};
