@@ -57,7 +57,7 @@ map<double , double> Flip(double Tmp)
   return accF;
 }
 
-void metropolis_alg(int n_Spin, int s_MC, int n_MC, double Tmp, vec &Exp_Val, vec &Tot_vals, vec &Enr_vec, map<double,double>accF, int cutoff)
+void metropolis_alg(int n_Spin, int s_MC, int n_MC, double Tmp, vec &Exp_Val, vec &Tot_vals, vec &Enr_vec, vec &Mag_vec, map<double,double>accF, int cutoff)
 {
   random_device rd;
   mt19937_64 generator(rd());
@@ -67,7 +67,7 @@ void metropolis_alg(int n_Spin, int s_MC, int n_MC, double Tmp, vec &Exp_Val, ve
   mat spin_mat = zeros<mat>(n_Spin,n_Spin);
   double Enr = 0.0; double Mag = 0.0;
 
-  Energy_lattice(n_Spin, 0, spin_mat, Enr, Mag, generator);
+  Energy_lattice(n_Spin, 1, spin_mat, Enr, Mag, generator);
 
   int a_counter = 0;
 
@@ -94,10 +94,13 @@ void metropolis_alg(int n_Spin, int s_MC, int n_MC, double Tmp, vec &Exp_Val, ve
         }
       }
     }
-    Enr_vec(cycles) = Enr/(n_Spin*n_Spin);
+    //outfile << a_counter << endl;
+    //Enr_vec(cycles) = Enr/(n_Spin*n_Spin);
     //cout << Enr_vec(cycles);
 
     if (cycles > s_MC + cutoff){
+      Enr_vec(cycles) = Enr/(n_Spin*n_Spin);
+      Mag_vec(cycles) = Mag/(n_Spin*n_Spin);
       Exp_Val(0) += Enr; Exp_Val(1) += Enr*Enr;
       Exp_Val(2) += Mag; Exp_Val(3) += Mag*Mag; Exp_Val(4) += fabs(Mag);
     }
@@ -113,7 +116,8 @@ void Results(int n_Spin, int n_MC, double Tmp, vec &Tot_vals, int numprocs, int 
   double E_Exp_Val = Tot_vals(0)*n_factor;
   double EE_Exp_Val = Tot_vals(1)*n_factor;
   double M_Exp_Val = Tot_vals(2)*n_factor;
-  double MM_Exp_Val = Tot_vals(3)*n_factor;
+  double MM_Exp_Val = Tot_vals(3
+  )*n_factor;
   double absM_Exp_Val = Tot_vals(4)*n_factor;
 
   double Energy_variance = (EE_Exp_Val - E_Exp_Val * E_Exp_Val )/ (n_Spin*n_Spin);
@@ -149,8 +153,8 @@ double T_s, T_f, T_dt, temp;
 MPI_Status status;
 
 
-n_Spin = 100;
-n_MC = 100000;
+n_Spin = 20;
+n_MC = 1000000;
 cutoff = 0;
 temp = 1.0;
 
@@ -164,7 +168,7 @@ outfile.open("r4b.txt");
 vec Exp_Val = zeros<vec>(5);
 vec Tot_vals = zeros<vec>(5);
 vec Enr_vec = zeros<vec>(n_MC+1);
-
+vec Mag_vec = zeros<vec>(n_MC+1);
 
 //MPI, parallelization
 MPI_Init (&argc, &argv);
@@ -187,11 +191,12 @@ double Tstart, Tend;
 Tstart = MPI_Wtime();
 
 map <double,double> accF = Flip(temp);
-metropolis_alg(n_Spin,0,n_MC,temp,Exp_Val,Tot_vals,Enr_vec,accF,cutoff);
+metropolis_alg(n_Spin,0,n_MC,temp,Exp_Val,Tot_vals,Enr_vec,Mag_vec,accF,cutoff);
 Results(n_Spin,n_MC,temp,Exp_Val, numprocs,cutoff);
-outfile << Enr_vec;
 
-
+for (int k = 1; k <= n_MC ;k++){
+  outfile << Enr_vec(k) << " " << Mag_vec(k) << endl;
+}
 //for(double temp = T_s; temp <= T_f; temp += T_dt){
 //  vec Exp_Val = zeros<vec>(5);
 //  map <double,double> accF = Flip(temp);

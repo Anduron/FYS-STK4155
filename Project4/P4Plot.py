@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from math import log
 
-infile = open("r4b.txt", "r")
+infile = open("DL20_T10_MC1M.txt", "r")
 
 infile.readline()
 
@@ -45,7 +45,13 @@ cycles = np.linspace(1,len(n),len(n));
 
 plt.plot(cycles,T)
 
-plt.xlabel("$T$",size = 15); plt.ylabel("$<E>$",size=15)
+plt.xlabel("$T$",size = 15); plt.ylabel("$\\langle E \\rangle$",size=15)
 plt.title("",size=15)
 plt.legend([""], prop={'size':15})
+plt.show()
+
+plt.hist(T[2002:], 15) #119
+plt.title("Energy probability distribution of 20x20 lattice",size=15)
+plt.xlabel("Energy",size = 15); plt.ylabel("Probability",size=15)
+plt.legend(["T=1.0"], prop={'size':15})
 plt.show()
