@@ -153,14 +153,14 @@ double T_s, T_f, T_dt, temp;
 MPI_Status status;
 
 
-n_Spin = 2;
-n_MC = 10000;
-cutoff = 0;
+n_Spin = 20;
+n_MC = 100000;
+cutoff = 5000;
 temp = 1.0;
 
 T_s = 1.0;
-T_f = 1.01;
-T_dt = 0.01;
+T_f = 2.4;
+T_dt = 1.4;
 
 outfile.open("r4b.txt");
 

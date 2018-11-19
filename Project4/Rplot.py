@@ -6,10 +6,23 @@ import matplotlib.pyplot as plt
 #files = ["L40_T20-23_dT0001_MC1M.txt", "L60_T20-23_dT0001_MC1M.txt", "L80_T20-23_dT0001_MC1M.txt", "L100_T20-23_dT0001_MC1M.txt"]
 #files = ["L40_T22-24_dT0001_MC1M.txt", "L60_T22-24_dT0001_MC1M.txt", "L80_T22-24_dT0001_MC1M.txt", "L100_T22-24_dT0001_MC1M.txt", "L140_T22-24_dT0001_MC1M.txt"]
 
-Aplot = True
+Hist = True
+Aplot = False
 DL20 = False
 OL20 = False
 L40_100 = False
+
+if Hist == True:
+    files = ["DL20_T10_MC1M.txt", "DL20_T24_MC1M.txt"]
+
+    E = np.loadtxt(i, usecols=0)
+
+    plt.hist(E[2002:], 119) #119
+    plt.title("Energy probability distribution of 20x20 lattice",size=15)
+    plt.xlabel("Energy",size = 15); plt.ylabel("Probability",size=15)
+    plt.legend(["T=1.0"], prop={'size':15})
+    plt.show()
+
 
 if Aplot == True:
     files = ["accepts10.txt", "accepts24.txt"]
