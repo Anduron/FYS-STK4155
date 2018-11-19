@@ -153,13 +153,13 @@ double T_s, T_f, T_dt, temp;
 MPI_Status status;
 
 
-n_Spin = 40;
-n_MC = 1000000;
-cutoff = 10000;
+n_Spin = 2;
+n_MC = 10000;
+cutoff = 0;
 temp = 1.0;
 
-T_s = 2.25;
-T_f = 2.35;
+T_s = 1.0;
+T_f = 1.01;
 T_dt = 0.01;
 
 outfile.open("r4b.txt");
@@ -194,9 +194,9 @@ Tstart = MPI_Wtime();
 //metropolis_alg(n_Spin,0,n_MC,temp,Exp_Val,Tot_vals,Enr_vec,Mag_vec,accF,cutoff);
 //Results(n_Spin,n_MC,temp,Exp_Val, numprocs,cutoff);
 
-for (int k = 1; k <= n_MC ;k++){
-  outfile << Enr_vec(k) << " " << Mag_vec(k) << endl;
-}
+//for (int k = 1; k <= n_MC ;k++){
+//  outfile << Enr_vec(k) << " " << Mag_vec(k) << endl;
+//}
 for(double temp = T_s; temp <= T_f; temp += T_dt){
   vec Exp_Val = zeros<vec>(5);
   map <double,double> accF = Flip(temp);

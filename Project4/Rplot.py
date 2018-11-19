@@ -6,9 +6,28 @@ import matplotlib.pyplot as plt
 #files = ["L40_T20-23_dT0001_MC1M.txt", "L60_T20-23_dT0001_MC1M.txt", "L80_T20-23_dT0001_MC1M.txt", "L100_T20-23_dT0001_MC1M.txt"]
 #files = ["L40_T22-24_dT0001_MC1M.txt", "L60_T22-24_dT0001_MC1M.txt", "L80_T22-24_dT0001_MC1M.txt", "L100_T22-24_dT0001_MC1M.txt", "L140_T22-24_dT0001_MC1M.txt"]
 
+Aplot = True
 DL20 = False
 OL20 = False
 L40_100 = False
+
+if Aplot == True:
+    files = ["accepts10.txt", "accepts24.txt"]
+
+    n = len(np.loadtxt("accepts10.txt",usecols=0))
+    cycles = np.linspace(1,n,n);
+
+    for i in files:
+
+        Accepts = np.loadtxt(i, usecols=0)
+
+
+        plt.loglog(cycles, Accepts)
+    plt.title("Number of accepted energy states for L=20 lattice",size=15)
+    plt.xlabel("log(cycles)",size=15); plt.ylabel("log(accepts)",size=15)
+    plt.legend(["T = 1.0", "T = 2.4"],prop={"size": 15})
+
+    plt.show()
 
 if DL20 == True:
     files = ["DL20_T10_MC1M.txt", "DL20_T24_MC1M.txt"]
@@ -26,7 +45,7 @@ if DL20 == True:
 
     plt.title("Magnetization with varying temperatures and L=20",size=15)
     plt.xlabel("cycles",size=15); plt.ylabel("$\\langle |M| \\rangle$/L^2",size=15)
-    plt.legend(["1.0", "2.4"],prop={"size": 15})
+    plt.legend(["T = 1.0", "T = 2.4"],prop={"size": 15})
 
     plt.show()
 
@@ -46,7 +65,7 @@ if OL20 == True:
 
     plt.title("Magnetization with varying temperatures and L=20",size=15)
     plt.xlabel("cycles",size=15); plt.ylabel("$\\langle |M| \\rangle$/L^2",size=15)
-    plt.legend(["1.0", "2.4"],prop={"size": 15})
+    plt.legend(["T = 1.0", "T = 2.4"],prop={"size": 15})
 
     plt.show()
 
