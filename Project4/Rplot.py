@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 #files = ["L40_T20-23_dT0001_MC1M.txt", "L60_T20-23_dT0001_MC1M.txt", "L80_T20-23_dT0001_MC1M.txt", "L100_T20-23_dT0001_MC1M.txt"]
 #files = ["L40_T22-24_dT0001_MC1M.txt", "L60_T22-24_dT0001_MC1M.txt", "L80_T22-24_dT0001_MC1M.txt", "L100_T22-24_dT0001_MC1M.txt", "L140_T22-24_dT0001_MC1M.txt"]
 
-Hist = True
+Apercyc = True
+Hist = False
 Aplot = False
 DL20 = False
 OL20 = False
@@ -17,12 +18,34 @@ if Hist == True:
 
     E = np.loadtxt(i, usecols=0)
 
-    plt.hist(E[2002:], 119) #119
+    plt.hist(E[2002:], 119, range=(-2,0.8)) #119
     plt.title("Energy probability distribution of 20x20 lattice",size=15)
     plt.xlabel("Energy",size = 15); plt.ylabel("Probability",size=15)
     plt.legend(["T=1.0"], prop={'size':15})
     plt.show()
 
+
+if Apercyc == True:
+    file = "accpercycle.txt"
+    n = np.loadtxt("accpercycle.txt",usecols=0)
+
+    Accepts10 = np.loadtxt(file,usecols=1)
+    Accepts24 = np.loadtxt(file,usecols=2)
+    plt.semilogy([1.0], Accepts10[0], "ro")
+    plt.semilogy([1.0], Accepts10[1], "bo")
+    plt.semilogy([1.0], Accepts10[2], "yo")
+    plt.semilogy([1.0], Accepts10[3], "go")
+
+    plt.semilogy([2.4], Accepts24[0], "ro")
+    plt.semilogy([2.4], Accepts24[1], "bo")
+    plt.semilogy([2.4], Accepts24[2], "yo")
+    plt.semilogy([2.4], Accepts24[3], "go")
+
+    plt.title("Number of accepted energy states for L=20 lattice",size=15)
+    plt.xlabel("T[kT/J]",size=15); plt.ylabel("log(accepts)",size=15)
+    plt.legend(["cycles = 1000", "cycles = 10000", "cycles = 100000", "cycles = 1000000"],prop={"size": 15})
+
+    plt.show()
 
 if Aplot == True:
     files = ["accepts10.txt", "accepts24.txt"]

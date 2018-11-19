@@ -156,7 +156,7 @@ MPI_Status status;
 n_Spin = 20;
 n_MC = 1000000;
 cutoff = 0;
-temp = 1.0;
+temp = 2.4;
 
 //T_s = 2.2;
 //T_f = 2.4;
