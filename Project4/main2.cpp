@@ -148,21 +148,45 @@ void Results(int n_Spin, int n_MC, double Tmp, vec &Tot_vals, int numprocs, int 
 
 int main(int argc, char* argv[])
 {
-int n_Spin, n_MC, my_rank, numprocs, cutoff;
-double T_s, T_f, T_dt, temp;
-MPI_Status status;
+  string filename;
+  int n_Spin, n_MC, cutoff, my_rank, numprocs;
+  double T_s, T_f, T_dt, temp;
+  MPI_Status status;
+
+  if( argc < 5 ){
+    cout << "Bad usage need filename and at least value for n_Spin, n_MC, cutoff, temp" << endl;
+    exit(1);
+  }
+  if (argc = 5){
+    filename = argv[1];
+    n_Spin = atoi(argv[2]);
+    n_MC = atoi(argv[3]);
+    cutoff = atoi(argv[4]);
+    temp = atof(argv[5]);
+
+  }
+  if (argc = 7){
+    filename = argv[1];
+    n_Spin = atoi(argv[2]);
+    n_MC = atoi(argv[3]);
+    cutoff = atoi(argv[4]);
+    T_s = atof(argv[5]);
+    T_f = atof(argv[6]);
+    T_dt = atof(argv[7]);
+  }
 
 
-n_Spin = 20;
-n_MC = 100000;
-cutoff = 5000;
-temp = 1.0;
 
-T_s = 1.0;
-T_f = 2.4;
-T_dt = 1.4;
 
-outfile.open("r4b.txt");
+//n_Spin = 60;
+//n_MC = 1000000;
+//cutoff = 10000;
+//temp = 1.0;
+//T_s = 2.2;
+//T_f = 2.4;
+//T_dt = 0.05;
+
+outfile.open(filename);
 
 
 vec Exp_Val = zeros<vec>(5);
@@ -214,5 +238,5 @@ if (my_rank == 0){
 }
 outfile.close();
 
-MPI_Finalize ();
+MPI_Finalize ();atof(argv[5]);
 }

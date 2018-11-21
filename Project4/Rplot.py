@@ -6,22 +6,23 @@ import matplotlib.pyplot as plt
 #files = ["L40_T20-23_dT0001_MC1M.txt", "L60_T20-23_dT0001_MC1M.txt", "L80_T20-23_dT0001_MC1M.txt", "L100_T20-23_dT0001_MC1M.txt"]
 #files = ["L40_T22-24_dT0001_MC1M.txt", "L60_T22-24_dT0001_MC1M.txt", "L80_T22-24_dT0001_MC1M.txt", "L100_T22-24_dT0001_MC1M.txt", "L140_T22-24_dT0001_MC1M.txt"]
 
-Apercyc = True
-Hist = False
+Apercyc = False
+Hist = True
 Aplot = False
 DL20 = False
 OL20 = False
 L40_100 = False
 
 if Hist == True:
-    files = ["DL20_T10_MC1M.txt", "DL20_T24_MC1M.txt"]
+    file1 = "DL20_T10_MC1M.txt"
+    file2 = "DL20_T24_MC1M.txt"
 
-    E = np.loadtxt(i, usecols=0)
+    E = np.loadtxt(file1, usecols=0)
 
-    plt.hist(E[2002:], 119, range=(-2,0.8)) #119
+    plt.hist(E[2002:], 119) #range=(-2,0.8))
     plt.title("Energy probability distribution of 20x20 lattice",size=15)
     plt.xlabel("Energy",size = 15); plt.ylabel("Probability",size=15)
-    plt.legend(["T=1.0"], prop={'size':15})
+    plt.legend(["T=2.4"], prop={'size':15})
     plt.show()
 
 
@@ -76,8 +77,8 @@ if DL20 == True:
         E = np.loadtxt(i, usecols=0)
         M = np.loadtxt(i, usecols=1)
 
-        plt.plot(cycles, abs(M))
-        #plt.plot(cycles, E)
+        #plt.plot(cycles, abs(M))
+        plt.plot(cycles, E)
 
     plt.title("Magnetization with varying temperatures and L=20",size=15)
     plt.xlabel("cycles",size=15); plt.ylabel("$\\langle |M| \\rangle$/L^2",size=15)

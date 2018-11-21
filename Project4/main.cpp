@@ -23,10 +23,12 @@ int p_bc(int i, int bound, int n_add){
 
 void Energy_lattice(int n_Spin, int GS, mat &spin_mat, double &Enr, double &Mag, mt19937_64 &generator)
 {
+  //Initializing lattice in ground state
   if (GS == 0){
     spin_mat.fill(1.0);
     Mag += (double) n_Spin * (double) n_Spin;
   }
+  //Initializing lattice in a random state
   else{
     uniform_int_distribution<int> rngSpin(0,1);
     for(int i = 0; i < n_Spin; i++){
@@ -35,7 +37,7 @@ void Energy_lattice(int n_Spin, int GS, mat &spin_mat, double &Enr, double &Mag,
       }
     }
   }
-
+  //setting up energy and magnetic moment
   for(int i = 0; i < n_Spin; i++){
     for(int j = 0; j < n_Spin; j++){
       Enr -= (double) spin_mat(i,j)*
@@ -47,6 +49,7 @@ void Energy_lattice(int n_Spin, int GS, mat &spin_mat, double &Enr, double &Mag,
   }
 }
 
+//calculating the energy differences and setting them up in a dictionary structure
 map<double , double> Flip(double Tmp)
 {
   map<double , double> accF;
@@ -71,6 +74,7 @@ void metropolis_alg(int n_Spin, int s_MC, int n_MC, double Tmp, vec &Exp_Val, ve
 
   int a_counter = 0;
 
+  //cycling over the lattice doing the metropolis test
   for (int cycles = s_MC; cycles <= n_MC; cycles ++){
     for (int i = 0; i < n_Spin; i++){
       for (int j = 0; j < n_Spin; j++){
@@ -85,7 +89,7 @@ void metropolis_alg(int n_Spin, int s_MC, int n_MC, double Tmp, vec &Exp_Val, ve
         + spin_mat( idx_i, p_bc( idx_j, n_Spin, 1) )
         + spin_mat( p_bc(idx_i ,n_Spin ,1 ), idx_j) );
 
-
+        //Metropolis test
         if (rng(generator) <= accF.find(dE)->second){
           spin_mat(idx_i,idx_j) *= -1.0;
           Mag += (double) 2*spin_mat(idx_i,idx_j);
@@ -98,6 +102,7 @@ void metropolis_alg(int n_Spin, int s_MC, int n_MC, double Tmp, vec &Exp_Val, ve
     //Enr_vec(cycles) = Enr/(n_Spin*n_Spin);
     //cout << Enr_vec(cycles);
 
+    //Calculating expectationvalues
     if (cycles > s_MC + cutoff){
       Enr_vec(cycles) = Enr/(n_Spin*n_Spin);
       Mag_vec(cycles) = Mag/(n_Spin*n_Spin);
@@ -105,6 +110,7 @@ void metropolis_alg(int n_Spin, int s_MC, int n_MC, double Tmp, vec &Exp_Val, ve
       Exp_Val(2) += Mag; Exp_Val(3) += Mag*Mag; Exp_Val(4) += fabs(Mag);
     }
   }
+  //paralellized calculation of expectationvalues found across the different threads
   for (int exn = 0; exn < 5; exn++){
     MPI_Reduce(&Exp_Val(exn), &Tot_vals(exn), 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
   }
@@ -112,6 +118,7 @@ void metropolis_alg(int n_Spin, int s_MC, int n_MC, double Tmp, vec &Exp_Val, ve
 }
 
 void Results(int n_Spin, int n_MC, double Tmp, vec &Tot_vals, int numprocs, int cutoff){
+  //Normalizing the expectationvalues
   double n_factor = 1.0/((double) (n_MC-cutoff));
   double E_Exp_Val = Tot_vals(0)*n_factor;
   double EE_Exp_Val = Tot_vals(1)*n_factor;
@@ -135,7 +142,7 @@ void Results(int n_Spin, int n_MC, double Tmp, vec &Tot_vals, int numprocs, int 
   outfile << absM_Exp_Val / ( n_Spin * n_Spin ) << " ";
   outfile << Energy_variance << " ";
   outfile << MagMoment_variance << endl;
-
+  //expectationvalues are written to file and printed for a quick check
 
   cout << Tmp << " ";
   cout << E_Exp_Val/(n_Spin*n_Spin) << " ";
@@ -148,6 +155,7 @@ void Results(int n_Spin, int n_MC, double Tmp, vec &Tot_vals, int numprocs, int 
 
 int main(int argc, char* argv[])
 {
+//Initializing variables
 int n_Spin, n_MC, my_rank, numprocs, cutoff;
 double T_s, T_f, T_dt, temp;
 MPI_Status status;
