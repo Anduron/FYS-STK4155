@@ -1,5 +1,5 @@
-
-# Created by https://www.gitignore.io/api/c++,linux,latex,python
+# Created by https://www.gitignore.io/api/c++,text,latex,linux,python
+# Edit at https://www.gitignore.io/?templates=c++,text,latex,linux,python
 
 ### C++ ###
 # Prerequisites
@@ -421,6 +421,9 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
+# Pyre type checker
+.pyre/
+
 ### Python Patch ###
 .venv/
 
@@ -436,5 +439,14 @@ dmypy.json
 pyvenv.cfg
 pip-selfcheck.json
 
+### Text ###
+*.doc
+*.docx
+*.msg
+*.pages
+*.rtf
+*.txt
+*.wpd
+*.wps
 
-# End of https://www.gitignore.io/api/c++,linux,latex,python
+# End of https://www.gitignore.io/api/c++,text,latex,linux,python
