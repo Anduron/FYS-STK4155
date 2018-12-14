@@ -6,7 +6,7 @@ import matplotlib.animation as animation
 fe_u = np.loadtxt('1GY_noQ.txt')
 be_u = np.loadtxt('1GY_Q_noSlab.txt')
 an_u = np.loadtxt('1GY_Q_slab.txt')
-u = fe_u
+u = be_u
 #u = an_u
 
 nx = len(u[0,:])
@@ -35,11 +35,11 @@ im = plt.imshow(mat[index], cmap=cm.coolwarm)
 cbar = plt.colorbar()
 plt.clim(0,1)
 cbar.ax.get_yaxis().labelpad = 15
-cbar.ax.set_ylabel('$\\Delta T$', rotation=270, size=15)
+cbar.ax.set_ylabel('$\\ T$', rotation=270, size=15)
 plt.xlabel('$x$', size=15); plt.ylabel('$y$', size=15)
-plt.title('Temperature distribution at t = %1.2f GYr\n with no radioactive perturbations' % (t), size=15)
+plt.title('Temperature distribution at t = %1.2f GYr\n with radioactive perturbations' % (t), size=15)
 #plt.title('Temperature distribution at t = %1.2f\nin a %s x %s grid (analytic)' % (t,nx,nx), size=15)
 #plt.savefig('figures/fe_error_2D_dx=%s_t=%1.2f.eps' % (dx,t))
-plt.savefig('1GY_noQ.pdf')
+plt.savefig('11GY_Q_noSlabslab.pdf')
 
 plt.show()

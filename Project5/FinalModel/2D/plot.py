@@ -10,7 +10,7 @@ j = 10
 j2 = 30
 
 if anim == True:
-    u = np.loadtxt("1GY_noQ.txt")
+    u = np.loadtxt("1GY_Q_slab.txt")
     n = len(u[0,:])
     x = np.linspace(0, 1, n)
 
@@ -29,7 +29,7 @@ if anim == True:
     #legend
     cbar = plt.colorbar()
     cbar.ax.get_yaxis().labelpad = 15
-    cbar.ax.set_ylabel('$T(x, y)$', rotation=270, size=15)
+    cbar.ax.set_ylabel('$T$', rotation=270, size=15)
     plt.xlabel('$x$', size=15); plt.ylabel('$y$', size=15)
     plt.title('Temperature distribution in a %s x %s grid' % (n,n), size=17)
 
@@ -55,7 +55,7 @@ if anim == True:
         # Set up formatting for the movie files
         Writer = animation.writers['ffmpeg']      # requires ffmpeg to be installed
         writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
-        ani.save('2D_1GY_noQ.mp4', writer=writer)
+        ani.save('2D_1GY_slab.mp4', writer=writer)
     else:
         plt.show()
 
