@@ -20,6 +20,7 @@ x = linspace(0,len(u1),len(u1))
 
 plot(x,u1,u2)
 plot(x,u3)
+grid(True)
 title('Temperature distribution in center of lithosphere \n at t = 1 GYr as function of depth',size=15)
 xlabel('$y$', size=15); ylabel('$u(y)$', size=15)
 show()
