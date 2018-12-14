@@ -34,7 +34,7 @@ void JSolver(double d, int n, double alpha, mat &u, mat rhs){
                                 Qd = 1.4E-6*scale2;
                         }
                         else if(i <= 40) {
-                                Qd = 0.35E-6*scale2 + 0.50E-6*scale2;
+                                Qd = 0.35E-6*scale2;
                         }
                         else if(i <= 120) {
                                 Qd = 0.05E-6*scale2 + 0.50E-6*scale2;

@@ -10,7 +10,7 @@ j = 10
 j2 = 30
 
 if anim == True:
-    u = np.loadtxt("1GY_Q_slab.txt")
+    u = np.loadtxt("1GY_noQ.txt")
     n = len(u[0,:])
     x = np.linspace(0, 1, n)
 
@@ -43,7 +43,7 @@ if anim == True:
             i=0         # reset animation
         im.set_array(mat[int(i)-1])
         t = float(i)/float(t_steps);
-        plt.title('Temperature distribution at t = %1.2f GY\nin a %s x %s grid (analytic)' % (t,n,n), size=15)
+        plt.title('Temperature distribution at t = %1.2f GYr\nin a %s x %s grid' % (t,n,n), size=15)
 
         return im,
 
@@ -55,7 +55,7 @@ if anim == True:
         # Set up formatting for the movie files
         Writer = animation.writers['ffmpeg']      # requires ffmpeg to be installed
         writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
-        ani.save('2D_1GY_slab.mp4', writer=writer)
+        ani.save('2D_1GY_noQ.mp4', writer=writer)
     else:
         plt.show()
 
