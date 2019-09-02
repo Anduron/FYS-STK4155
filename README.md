@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # FYS3150
 This repository will contain all programs works in progress and other dysfunctional files that i create while going through the course FYS3150 Computational Physics
 
@@ -17,3 +18,7 @@ Using the Metropolis algorithm to simulate the Ising model.
 
 PROJECT 5:
 Solving PDE's (Heat Diffusion in one and two dimensions) using implicit and explicit schemes.
+=======
+# In5270
+Numerical differential equations
+>>>>>>> 3763037f71e69676271a617072fd9192d713520e
