@@ -10,11 +10,11 @@ from sklearn.preprocessing import PolynomialFeatures
 import scipy.linalg as scl
 import pandas as pd
 from imageio import imread
-
+import sys
 
 def FrankeFunction(x,y,n,noise,noisy=True):
     """
-    Creates a franke function with or without noise
+    Creates a franke function with or without noise.
     """
 
     epsilon = np.random.normal(0,noise,(n,n))
@@ -53,7 +53,7 @@ def DataImport(filename):
 
 def plotting_function(x,y,z,n):
     """
-    Plots a 3d surface
+    Plots a 3d surface.
     """
 
     z = np.reshape(z,(n,n))
@@ -71,7 +71,7 @@ def plotting_function(x,y,z,n):
 
 def X_DesignMatrix(x,y,degree = 5):
     """
-    Creates a design matrix from...
+    Creates a design matrix of polynomials from parameters x and y (Vandermonde).
     """
 
     if len(x.shape) > 1:
@@ -92,7 +92,7 @@ def X_DesignMatrix(x,y,degree = 5):
 def Coeff(X,y_tilde):
     """
     Creates the beta coefficient vector for OLS by matrix inversion, using the
-    design matrix and your target data, SVD is hashed out because it is slow.
+    design matrix and your target data.
     """
 
     B = np.linalg.pinv(np.dot(X.T,X)).dot(X.T).dot(y_tilde)
@@ -111,16 +111,23 @@ def CoeffRidge(X,y_tilde, lmb):
     B = np.linalg.pinv(np.dot(X.T,X) + lmb*np.identity(len(np.dot(X.T,X)))).dot(X.T).dot(y_tilde)
     return B
 
+def ConfInterval(B, X, c=1.96):
+    """
+    Finds the confidence interval of the Betas.
+    """
+
+    SE = np.sqrt(np.diag(np.linalg.pinv(X.T @ X)))*c
+    B_min = B - SE
+    B_max = B + SE
+    return B_min, B_max
 
 def kCrossValidation(x,y,z,deg_max,k=5,lmb=0):
     """
-    Reshuffles the dataset to
+    Performs a k-fold crossvalidation of a dataset.
     """
 
     kfold = KFold(k,True,1)
     r2score_old = 0
-
-    #B_Best = np.zeros((deg_max,int((deg_max+1)*(deg_max+2)/2)))
 
     r2_scores = np.zeros((deg_max+1,k))
     r2_score = np.zeros(deg_max+1)
@@ -184,7 +191,8 @@ def kCrossValidation(x,y,z,deg_max,k=5,lmb=0):
 
 def main():
     """
-    Calling the functions used to perform data analysis...
+    Performs Data analysis on the Franke function with noise, using OLS, Ridge
+    and Lasso with crossvalidation.
     """
 
     np.random.seed(42)
@@ -193,7 +201,7 @@ def main():
     n = 100
     noise = 0.5
     test_S = 0.3
-    degree = 12
+    degree = 5
     k = 5
     deg_max = 12 #20
     lmb = 0.001
@@ -220,7 +228,7 @@ def main():
     X_DM = X_DesignMatrix(x_1,y_1,degree)
 
 
-    #Calls OLS
+    #Calls for solving tasks with OLS
     B = Coeff(X_DM,z_1)
     z_predict = np.dot(X_DM,B).reshape(n,n)
     r2_score = metrics.r2_score(z_true,np.reshape(z_predict,(n,n)))
@@ -229,8 +237,13 @@ def main():
     #MSE = metrics.mean_squared_error(z,np.reshape(z_predict,(n,n)))
     print("MSE = %s, R2 score = %s" %(MSE,r2_score))
     plotting_function(x,y,z_predict,n)
+    B_max, B_min = ConfInterval(B,X_DM)
+    plt.figure()
+    plt.plot(range(len(B)), B, label="$\beta$")
+    plt.plot(range(len(B)), B_max, label="$\beta_min$")
+    plt.plot(range(len(B)), B_min, label="$\beta_min$")
 
-    #Calls Ridge
+    #Calls for solving tasks with Ridge
     B_ridge = CoeffRidge(X_DM,z_1,lmb)
     z_ridge = np.dot(X_DM,B_ridge).reshape(n,n)
     r2_score_ridge = metrics.r2_score(z_true,np.reshape(z_ridge,(n,n)))
@@ -240,7 +253,7 @@ def main():
     print("MSE ridge = %s, R2 score ridge = %s" %(MSE_ridge,r2_score_ridge))
     plotting_function(x,y,z_ridge,n)
 
-    #Calls Lasso
+    #Calls for solving tasks with Lasso
     clf_lasso = skl.Lasso(alpha=gamma, max_iter=10e4, tol = 0.01).fit(X_DM,z_1)
     z_lasso = clf_lasso.predict(X_DM)
     r2_score_lasso = metrics.r2_score(z_true,np.reshape(z_lasso,(n,n)))
@@ -262,14 +275,18 @@ def main():
     plt.plot(degs, (variance), label="Variance")
     plt.legend()
 
-    
+
     i = 0
     MSE_test_ridge = np.zeros((len(lmb_range),deg_max+1))
     MSE_train_ridge = np.zeros((len(lmb_range),deg_max+1))
+
+
+    print("Crossvalidation with ridge completion:")
     for l in lmb_range:
-        print(l)
+        sys.stdout.write("\r%d %%" %(100*(i+1)/len(lmb_range)))
         r2_score_ridge, MSE_test_ridge[i,:], MSE_train_ridge[i,:], bias_ridge, variance_ridge = kCrossValidation(x_1,y_1,z_1,deg_max,k,l)
         i+=1
+        sys.stdout.flush()
 
 
     #fig = plt.figure()
@@ -279,19 +296,25 @@ def main():
     fig = plt.figure()
     ax = fig.gca(projection='3d')
 
-    surf = ax.plot_surface(np.log10(msx),msy,(MSE_test_ridge),linewidth=0,antialiased = False)
-    surf = ax.plot_surface(np.log10(msx),msy,(MSE_train_ridge),linewidth=0,antialiased = False)
+    surf = ax.plot_surface(np.log10(msx),msy,(MSE_test_ridge),label="Test MSE",linewidth=0,antialiased = False)
+    surf = ax.plot_surface(np.log10(msx),msy,(MSE_train_ridge),label="Train MSE",linewidth=0,antialiased = False)
 
     ax.set_zlim(np.min((MSE_test_ridge)), np.max((MSE_test_ridge)))
     ax.zaxis.set_major_locator(LinearLocator(10))
     ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+    plt.title("Crossvalidation of Ridge")
 
     fig.colorbar(surf, shrink=0.5, aspect=5)
 
-    print(MSE_test_ridge)
+    #print(MSE_test_ridge)
 
 
 def main2():
+    """
+    Solves the same tasks as above but for the real terrain data imported with
+    the function DataImport.
+    """
+
     TerrainDataSet = DataImport('Norway_1arc.tif')
     ny = len(TerrainDataSet[:,0])
     nx = len(TerrainDataSet[0,:])
@@ -299,7 +322,7 @@ def main2():
 
     Tdegree = 50
     Tlambda = 1e-4
-    Tgamma = 1e-6
+    Tgamma = 5e-6
 
     PosX = np.linspace(0,1,nx)
     PosY = np.linspace(0,1,ny)
@@ -336,6 +359,7 @@ def main2():
 
 
 if __name__ == "__main__":
-    #main()
-    main2()
+    #Recommended not running both mains at the same time.
+    main()
+    ##main2()
     plt.show()
