@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.utils import resample
 
-np.random.seed()
+np.random.seed(2018)
 
 n = 40
 n_boostraps = 100

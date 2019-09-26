@@ -29,37 +29,26 @@ def FrankeFunction(x,y,n,noise,noisy=True):
         f = t1+t2+t3+t4
     return f
 
+
 def DataImport(filename):
     """
-    Imports terraindata...
+    Imports and downscales the terraindata, then plots it.
     """
-
+    sc = 10
     # Load the terrain
     terrain1 = imread(filename)
-    # Show the terrain
+
+    # Downscale the terrain
+    downscaled = terrain1[1::sc,1::sc]
+
+
+    #Show the downscaled terrain
+    #plt.figure()
+    #plt.imshow(terrain1, cmap='gray')
     plt.figure()
-    plt.imshow(terrain1, cmap='gray')
+    plt.imshow(downscaled, cmap='gray')
 
-
-def X_DesignMatrix(x,y,degree = 5):
-    """
-    Creates a design matrix from...
-    """
-
-    n = len(x)
-    if len(x.shape) > 1:
-	       x = np.ravel(x)
-	       y = np.ravel(y)
-
-    lB = int((degree+1)*(degree+2)/2)
-    X = np.ones((n,lB))
-
-    for i in range(1,degree+1):
-        j = int(i*(i+1)/2)
-        for k in range(i+1):
-            X[:, j+k] = (x**(i-k))*(y**k)
-    return X
-
+    return downscaled
 
 
 def plotting_function(x,y,z,n):
@@ -80,17 +69,38 @@ def plotting_function(x,y,z,n):
     return fig.colorbar(surf, shrink=0.5, aspect=5)
 
 
+def X_DesignMatrix(x,y,degree = 5):
+    """
+    Creates a design matrix from...
+    """
+
+    if len(x.shape) > 1:
+	       x = np.ravel(x)
+	       y = np.ravel(y)
+
+    n = len(x)
+    lB = int((degree+1)*(degree+2)/2)
+    X = np.ones((n,lB))
+
+    for i in range(1,degree+1):
+        j = int(i*(i+1)/2)
+        for k in range(i+1):
+            X[:, j+k] = (x**(i-k))*(y**k)
+    return X
+
+
 def Coeff(X,y_tilde):
     """
     Creates the beta coefficient vector for OLS by matrix inversion, using the
     design matrix and your target data, SVD is hashed out because it is slow.
     """
 
-    B = np.linalg.inv(np.dot(X.T,X)).dot(X.T).dot(y_tilde)
+    B = np.linalg.pinv(np.dot(X.T,X)).dot(X.T).dot(y_tilde)
 
     #U, S, V = scl.svd(X)
     #B = V.T @ scl.pinv(scl.diagsvd(S,U.shape[0], V.shape[0])) @ U.T @ y_tilde
     return B
+
 
 def CoeffRidge(X,y_tilde, lmb):
     """
@@ -98,11 +108,11 @@ def CoeffRidge(X,y_tilde, lmb):
     inversion and adding the lambda for the diagonal.
     """
 
-    B = np.linalg.inv(np.dot(X.T,X) + lmb*np.identity(len(np.dot(X.T,X)))).dot(X.T).dot(y_tilde)
+    B = np.linalg.pinv(np.dot(X.T,X) + lmb*np.identity(len(np.dot(X.T,X)))).dot(X.T).dot(y_tilde)
     return B
 
 
-def kCrossValidation(x,y,z,deg_max,k=5):
+def kCrossValidation(x,y,z,deg_max,k=5,lmb=0):
     """
     Reshuffles the dataset to
     """
@@ -141,18 +151,18 @@ def kCrossValidation(x,y,z,deg_max,k=5):
 
             X_Train = X_DesignMatrix(x_train,y_train,deg)
             X_Test = X_DesignMatrix(x_test,y_test,deg)
-            B = Coeff(X_Train,z_train)
+            B = CoeffRidge(X_Train,z_train,lmb)
             #print(B)
 
             z_predict_train = X_Train @ B
             z_predict_test = X_Test @ B
 
-            z_true = FrankeFunction(x_test,y_test,len(x_test),0,False)
-            r2_scores[i,j] = metrics.r2_score(z_true, z_predict_test)
-            MSEs_test[i,j] = metrics.mean_squared_error(z_true, z_predict_test)
+            #z_true = FrankeFunction(x_test,y_test,len(x_test),0,False)
+            #r2_scores[i,j] = metrics.r2_score(z_true, z_predict_test)
+            #MSEs_test[i,j] = metrics.mean_squared_error(z_true, z_predict_test)
 
-            #r2_scores[i,j] = metrics.r2_score(z_test, z_predict_test)
-            #MSEs_test[i,j] = metrics.mean_squared_error(z_test, z_predict_test)
+            r2_scores[i,j] = metrics.r2_score(z_test, z_predict_test)
+            MSEs_test[i,j] = metrics.mean_squared_error(z_test, z_predict_test)
             MSEs_train[i,j] = metrics.mean_squared_error(z_train, z_predict_train)
             b += (z_test - np.mean( z_predict_test ))**2
             v += np.var( z_predict_test )
@@ -177,17 +187,20 @@ def main():
     Calling the functions used to perform data analysis...
     """
 
-    np.random.seed(10)
+    np.random.seed(42)
 
 
     n = 100
     noise = 0.5
     test_S = 0.3
-    degree = 5
+    degree = 12
     k = 5
     deg_max = 12 #20
-    lmb = 0.00001
-    gamma = 0.001
+    lmb = 0.001
+    gamma = 0.0001
+
+    lmb_range = lmb*np.ones(13)
+    for i in range(1, len(lmb_range)): lmb_range[i] = np.sqrt(10)*lmb_range[i-1]
 
     x = np.sort(np.random.uniform(0,1,n))
     y = np.sort(np.random.uniform(0,1,n))
@@ -199,7 +212,6 @@ def main():
     z_true = FrankeFunction(x,y,n,noise,False)
 
     z_1 = np.ravel(z)
-    z_2 = DataImport('Norway_1arc.tif')
 
     plotting_function(x,y,z,n)
 
@@ -213,6 +225,8 @@ def main():
     z_predict = np.dot(X_DM,B).reshape(n,n)
     r2_score = metrics.r2_score(z_true,np.reshape(z_predict,(n,n)))
     MSE = metrics.mean_squared_error(z_true,np.reshape(z_predict,(n,n)))
+    #r2_score = metrics.r2_score(z,np.reshape(z_predict,(n,n)))
+    #MSE = metrics.mean_squared_error(z,np.reshape(z_predict,(n,n)))
     print("MSE = %s, R2 score = %s" %(MSE,r2_score))
     plotting_function(x,y,z_predict,n)
 
@@ -221,6 +235,8 @@ def main():
     z_ridge = np.dot(X_DM,B_ridge).reshape(n,n)
     r2_score_ridge = metrics.r2_score(z_true,np.reshape(z_ridge,(n,n)))
     MSE_ridge = metrics.mean_squared_error(z_true,np.reshape(z_ridge,(n,n)))
+    #r2_score_ridge = metrics.r2_score(z,np.reshape(z_ridge,(n,n)))
+    #MSE_ridge = metrics.mean_squared_error(z,np.reshape(z_ridge,(n,n)))
     print("MSE ridge = %s, R2 score ridge = %s" %(MSE_ridge,r2_score_ridge))
     plotting_function(x,y,z_ridge,n)
 
@@ -234,8 +250,8 @@ def main():
 
 
     #x_train, x_test, y_train, y_test, z_train, z_test = train_test_split(x_1,y_1,z_1,test_size=test_S)
+    #r2_score, MSE_test, MSE_train, bias, variance = kCrossValidation(x_train,y_train,z_train,deg_max,k)
     r2_score, MSE_test, MSE_train, bias, variance = kCrossValidation(x_1,y_1,z_1,deg_max,k)
-
 
     degs = range(0,deg_max+1)
 
@@ -244,9 +260,82 @@ def main():
     plt.plot(degs, (MSE_train), label="train MSE")
     plt.plot(degs, (bias), label="Bias")
     plt.plot(degs, (variance), label="Variance")
-
     plt.legend()
 
+    
+    i = 0
+    MSE_test_ridge = np.zeros((len(lmb_range),deg_max+1))
+    MSE_train_ridge = np.zeros((len(lmb_range),deg_max+1))
+    for l in lmb_range:
+        print(l)
+        r2_score_ridge, MSE_test_ridge[i,:], MSE_train_ridge[i,:], bias_ridge, variance_ridge = kCrossValidation(x_1,y_1,z_1,deg_max,k,l)
+        i+=1
+
+
+    #fig = plt.figure()
+    #ax = fig.add_subplot(111, projection='3d')
+    #ax.add_collection3d(lmb_range,MSE_test_ridge)
+    msx,msy = np.meshgrid(lmb_range,degs)
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+
+    surf = ax.plot_surface(np.log10(msx),msy,(MSE_test_ridge),linewidth=0,antialiased = False)
+    surf = ax.plot_surface(np.log10(msx),msy,(MSE_train_ridge),linewidth=0,antialiased = False)
+
+    ax.set_zlim(np.min((MSE_test_ridge)), np.max((MSE_test_ridge)))
+    ax.zaxis.set_major_locator(LinearLocator(10))
+    ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+
+    fig.colorbar(surf, shrink=0.5, aspect=5)
+
+    print(MSE_test_ridge)
+
+
+def main2():
+    TerrainDataSet = DataImport('Norway_1arc.tif')
+    ny = len(TerrainDataSet[:,0])
+    nx = len(TerrainDataSet[0,:])
+
+
+    Tdegree = 50
+    Tlambda = 1e-4
+    Tgamma = 1e-6
+
+    PosX = np.linspace(0,1,nx)
+    PosY = np.linspace(0,1,ny)
+    PosX,PosY = np.meshgrid(PosX,PosY)
+
+    PosZ = np.ravel(TerrainDataSet)/np.max(TerrainDataSet)
+    X_Terrain = X_DesignMatrix(PosX,PosY,Tdegree)
+
+
+    B_OLS_Terrain = Coeff(X_Terrain, PosZ)
+    zp_OLS_Terrain = np.dot(X_Terrain,B_OLS_Terrain).reshape(ny,nx)
+
+    plt.figure()
+    plt.imshow( zp_OLS_Terrain , cmap="gray")
+
+
+    B_Ridge_Terrain = CoeffRidge(X_Terrain, PosZ, Tlambda)
+    zp_Ridge_Terrain = np.dot(X_Terrain,B_Ridge_Terrain).reshape(ny,nx)
+
+    plt.figure()
+    plt.imshow( zp_Ridge_Terrain , cmap="gray")
+    #print(zp_Ridge_Terrain)
+
+
+    B_Lasso_Terrain = skl.Lasso(alpha=Tgamma, max_iter=10e4, tol = 0.01).fit(X_Terrain, PosZ)
+    # zp_Lasso = clf_lasso.predict(X_Terrain)
+    zp_Lasso = B_Lasso_Terrain.predict(X_Terrain)
+    zp_Lasso_Terrain = zp_Lasso.reshape(ny,nx)
+
+    plt.figure()
+    plt.imshow( zp_Lasso_Terrain , cmap='gray')
+    print(zp_Lasso_Terrain)
+
+
+
 if __name__ == "__main__":
-    main()
+    #main()
+    main2()
     plt.show()
