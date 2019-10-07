@@ -75,7 +75,7 @@ nofootinbib,
 \date{\today}
 
 \begin{abstract}
-Applying methods of regression in combination with resampling we studied the effects of increasing the complexity of our fitted model. The methods are applied on the Franke function with normal distributed datapoints and an image of a terrain. When increasing the complexity we observe overfitting for Ordinary Least Squares (OLS) for polynomial degree $>7$. Further we apply Ridge and Lasso regression, which are methods that penalize the complexity proportionally the hyperparameter $\lambda$, yielding a more stable and/or smooth model for larger values of $\lambda$ when the complexity is high or there is a high variance in the data points. For Ridge we observe overfitting for the same polynomial degree as OLS, where the overfit is related to the hyperparameter. For Lasso there is no observed overfitting. Applying our methods on the terrain data we observe that the $R^2$ score is greatly reduced compared to the Franke function, which is related to how noisy the terrain data is.
+Applying methods of regression in combination with resampling we studied the effects of increasing the complexity of our fitted model. The methods are applied on the Franke function with normal distributed datapoints and an image of a terrain. When increasing the complexity we observe overfitting for Ordinary Least Squares (OLS) for polynomial degree $>7$. Further we apply Ridge and Lasso regression, which are methods that penalize the complexity proportionally to the hyperparameter $\lambda$, yielding a more stable and/or smooth model for larger values of $\lambda$ when the complexity is high or there is a high variance in the data points. For Ridge we observe overfitting for the same polynomial degree as OLS, where the overfit is related to the hyperparameter. For Lasso there is no observed overfitting. Applying our methods on the terrain data we observe that the $R^2$ score is greatly reduced compared to the Franke function, which is related to how noisy the terrain data is. For the terrain data the best MSE was found to be 0.008 using Ridge regression.
 \end{abstract}
 
 %\keywords{Computational Science, Regression Methods: Ordinary Least Squares, Ridge, Lasso}%Use showkeys class option if keyword
@@ -108,7 +108,7 @@ so that the height $z$ of the terrain is
 where $\boldsymbol{\epsilon}$ represents normal distributed stochastic noise, i.e. $\epsilon_i = \mathcal{N}(0, \sigma^2)$. This gives us a set of data that resembles terrain which we can use to test our regression methods on.
 
 \subsection{Real Terrain Data}
-After testing our algorithms on artificial data we will introduce real terrain data. This data is downloaded from \cite{terrain} and represents an area in Norway. This dataset is 3601 by 1801 pixels, with each pixel taking a value that represents the terrain height.
+After testing our algorithms on artificial data we will introduce real terrain data. This data is downloaded from webpage \cite{terrain} and represents an area in Norway. This dataset is 3601 by 1801 pixels, with each pixel taking a value that represents the terrain height.
 
 Due to the size of the dataset we will need to downscale the data in order to get reasonable runtimes with our algorithms. We choose to scale down the data by a factor of 20 along both dimensions, resulting in a dataset that is 400 times smaller than the complete dataset. This appears to give a good balance between runtime and data resolution. The individual datapoints are also scaled so that $x$, $y$ and $z$ only take values between 0 and 1.
 
@@ -224,564 +224,20 @@ With the above equation we can write the confidence interval for our model as:
 
 
 \subsection{Ridge and Lasso Regression Methods}
+Ridge and Lasso are both classified as shrinkage methods. They minimize the residual sum of squares with a penalty term that adds an explicit size constraint on the parameters\footnote{See page 62-63 in \cite{Hastie}}.
 The same ideas that are utilized in Ridge regression can be found in the "ad hoc" way of solving singularities in matrices in linear algebra. The idea is to add some hyperparameter $\lambda$ to avoid zeros along the diagonal of the matrix, thus being able to give an estimate to the inverted singular matrix. Using the hyperparameter results in an estimate that can be considered reasonable for the determinant of the matrix. Ridge uses a hyperparameter $\lambda$ to penalize the $\beta$ coefficients of our model. This is done by adding the $\lambda$ to the diagonal of the matrix that we are inverting. In some cases where the noise of the dataset is high, Ridge can help reduce overfitting.
 %
 \begin{equation}\label{eq:Ridge}
     \boldsymbol{y} = \boldsymbol{X}\boldsymbol{\beta} = \boldsymbol{X}(\boldsymbol{X}^{T}\boldsymbol{X} + \lambda \boldsymbol{I})^{-1}\boldsymbol{X}^{T}\boldsymbol{y}.
 \end{equation}
 %
-Ridge and Lasso are both shrinkage methods. Ridge penalizes the coefficients of the fitted model by uniformly shrinking them, while Lasso translates each coefficient by $\lambda$, truncating at zero\footnote{See The Elements of Statistical Learning\cite{Hastie} page 69}. In the case of Ridge the coefficients go to $0$ as $\lambda \rightarrow \infty$. For Lasso we used scikit-learn, since we were more interested in the methods results rather than the method itself.
-
-\subsection{K-Fold Cross-Validation}
-When working with scarce data one can use a resampling methods for validating
-the prediction. By splitting the data into subsets; a test and a
-training set, we performs K validations of the predictive model. For K-fold CV
-we split the data into K folds, where one of the folds serve as the test set
-and the rest is used to train the model. This is repeated K times until all the
-folds have been used as a test set once. Each repetition results in a slightly
-different model where the evaluation scores are retained, e.g. MSE or R$^2$
-score, which can be used to decide on the best model.
-
-A typical choice of folds is 5 or 10. A lower number of folds $K$ will return a smaller variance, but a larger bias as less data is used for training. With very small datasets this bias is likely to affect the outcome\footnote{See The Elements of Statistical Learning\cite{Hastie} page 243}. This bias and variance is inherent to the cross-validation itself for a given number of parameters.
-
-An added bonus of performing a Cross-Validation is that we can scale down the
-dataset for the terrain data, thus reducing the dataset, to reduce calculations
-in our algorithm and improve run times, while still producing a satisfactory model.
-
-\begin{figure}[b]
-\includegraphics[width=\columnwidth]{mse_train_test_ols_franke.pdf}
-\caption{\label{fig:mse_train_test_ols_franke_eps05} Train and test error as a function of complexity using the Franke dataset. Method used to predict is OLS. The grid is 50x50 large and the error is normal distributed around 0 with a scale of 0.5, this is done to enhance the bias-variance tradeoff.}
-\end{figure}
-
-\begin{figure}[h!]
-\includegraphics[width=\columnwidth]{mse_train_test_ridge_franke.pdf}
-\caption{\label{fig:mse_train_test_ridge_franke_eps065} Train and test error as a function of complexity using Ridge regression on the Franke dataset. The noise is normally distributed around 0 and has a variance of 0.65. The error is tweaked slightly from Fig. \ref{fig:mse_train_test_ols_franke_eps05} in order to illustrate the dependence on $\lambda$ better. $\lambda$ = \{$1.00 \cdot 10^{-10}, 3.16 \cdot 10^{-9}, 1.00 \cdot 10^{-7}, 3.16 \cdot 10^{-6}, 1.00 \cdot 10^{-4} $\}, in order of decreasing test MSE at complexity 14.}
-\end{figure}
-
-\begin{figure}[h!]
-\includegraphics[width=\columnwidth]{mse_train_test_lasso_franke.pdf}
-\caption{\label{fig:mse_train_test_lasso_franke_eps065} Train and test error as a function of complexity using Lasso regression on the Franke dataset. The noise is normally distributed around 0 and has a variance of 0.65. The error is tweaked slightly from Fig. \ref{fig:mse_train_test_ols_franke_eps05} in order to illustrate the dependence on $\lambda$ better. $\lambda$ = \{$5.00 \cdot 10^{-5}, 1.88 \cdot 10^{-4}, 7.07 \cdot 10^{-4}, 2.66 \cdot 10^{-3}, 1.00 \cdot 10^{-2} $\} in order of decreasing test MSE at complexity 14.}
-\end{figure}
-
-\subsection{Estimating Bias and Variance}
-The full prediction error consists of a variance, bias and an irreducible error. When few parameters are used in a regression the bias becomes high. If complexity is increased by adding more parameters, i.e. increasing polynomial degree of the fit, the bias will decrease. On the other hand low complexity means there will be a lower variance and increasing complexity will increase the variance. This is the bias-variance tradeoff which can be derived from
-%
-\begin{equation*}
-   C(\boldsymbol{X}, \boldsymbol{\beta}) = \frac{1}{n} \sum_{i=0}^{n-1} (y_i - \tilde{y_i}) =  \mathbb{E}[(\boldsymbol{y} - \boldsymbol{\tilde{y}})^2].
-\end{equation*}
-%
-where $y = f(x) + \epsilon$. To solve this we add and subtract $\mathbb{E}$ and insert the expression for $y$
-%
-\begin{align*}
-    &=\mathbb{E}[(f + \epsilon - \tilde{y} + \mathbb{E}[\tilde{y}] - \mathbb{E}[\tilde{y}])^2]\\
-    &= \mathbb{E}[(f - \mathbb{E}[\tilde{y})^2] + \mathbb{E}[\epsilon] + \mathbb{E}[(\mathbb{E}[\tilde{y}] - \tilde{y})^2]\\
-    &=\frac{1}{n}\sum_i (f_i - \mathbb{E}[\tilde{y})^2 + \frac{1}{n}\sum_i (\mathbb{E}[\tilde{y}] - \tilde{y})^2 + \sigma^2.
-\end{align*}
-%
-The first term in the above equation is the square bias of the model, and it is the difference between the true function behind the data and the expectation of the predicted model. The second term term is the variance and it tells us how much the given model varies around the mean. A model with high variance follows the training data closely and will not adapt well to new data. The final term is the irreducible error.
-%
-
-
-\section{Results}\label{sec:results}
-In Fig. \ref{fig:mse_train_test_ols_franke_eps05}, Fig. \ref{fig:mse_train_test_ridge_franke_eps065} and Fig. \ref{fig:mse_train_test_lasso_franke_eps065} we can see the MSE for the train and test data applied on our model as a function of complexity, for the Franke dataset, for OLS, Ridge and Lasso respectively. While for the terrain dataset we can see the MSE for train and test applied on the model in Fig. \ref{fig:mse_train_test_ols_terrain_181x91}.
-
-Fig. \ref{fig:CI_beta_franke_eps05} shows the confidence intervals for $\beta$ up to polynomial degree 5.
-
-
-In table \ref{tab:best_p_franke} and \ref{tab:best_p_terrain} we can see the best polynomial degree and corresponding hyperparameter for the models for Franke and the terrain data respectively.
-
-
-\begin{table}[b]
-\caption{\label{tab:R2_MSE}%
-$R^2$ and MSE for both datasets. For Franke we have used 50x50 grid and a normal Gaussian distributed noise with standard deviation 0.5. The model is trained with noisy data, but the error is found by the true Franke function.
-}
-\begin{ruledtabular}
-\begin{tabular}{lcr}
-\textrm{Dataset}&
-\multicolumn{1}{c}{\textrm{$R^2$ Score}}&
-\textrm{MSE}\\
-\colrule
-Franke  & 0.942 & 0.004\\
-Terrain & 0.539 & 0.012\\
-\end{tabular}
-\end{ruledtabular}
-\end{table}
-
-\begin{table}[b]
-\caption{\label{tab:best_p_franke}%
-Best polynomial degree and hyperparameter for Franke dataset for each model. We have used 50x50 grid and a normal Gaussian distributed noise with standard deviation 0.5.
-}
-\begin{ruledtabular}
-\begin{tabular}{lccr}
-\textrm{Dataset}&
-\multicolumn{1}{c}{\textrm{OLS}}&
-\multicolumn{1}{c}{\textrm{Ridge}}&
-\textrm{Lasso}\\
-\colrule
-Degree & 6 & 7 & 10 \\
-Hyperparameter & N/A & $1.274 \cdot 10^{-4}$ & $5 \cdot 10^{-5}$ \\
-MSE & 0.005 & 0.004 & 0.007  \\
-$R^2$ & 0.935 & 0.934 & 0.902 \\
-\end{tabular}
-\end{ruledtabular}
-\end{table}
-
-\begin{table}[b]
-\caption{\label{tab:best_p_terrain}%
-Best polynomial degree and hyperparameter for terrain dataset for each model.
-}
-\begin{ruledtabular}
-\begin{tabular}{lccr}
-\textrm{}&
-\multicolumn{1}{c}{\textrm{OLS}}&
-\multicolumn{1}{c}{\textrm{Ridge}}&
-\textrm{Lasso}\\
-\colrule
-Degree  & 38 & 47 & 45 \\
-Hyperparameter & N/A & $4.642 \cdot 10^{-11}$ & $3 \cdot 10^{-6}$  \\
-MSE & 0.009 & 0.008 & 0.012 \\
-$R^2$ & 0.689 & 0.700& 0.548\\
-\end{tabular}
-\end{ruledtabular}
-\end{table}
-
-\begin{figure*}[t]
-\includegraphics[width=2\columnwidth]{mse_heatmap_franke_ridge_nonoise.pdf}
-\caption{\label{fig:mse_heatmap_franke_ridge_nonoise} Test MSE from using Ridge regression to fit a model on dataset generated by the Franke function.}
-\end{figure*}
-
-\begin{figure}[b]
-\includegraphics[width=\columnwidth]{CI_beta_franke_eps05.pdf}
-\caption{\label{fig:CI_beta_franke_eps05} 95\% Confidence intervals for $\boldsymbol{\beta}$ with complexity $p=5$, using a dataset generated by the Franke function. The error is normally distributed around 0 with variance 0.5.}
-\end{figure}
-
-\begin{figure}[b]
-\includegraphics[width=\columnwidth]{mse_train_test_ols_terrain_181x91.pdf}
-\caption{\label{fig:mse_train_test_ols_terrain_181x91} Train and test error as a function of complexity, using the ordinary least squares regression method on (scaled) terrain data.}
-\end{figure}
-
-\begin{figure*}[t]
-\centering
-\begin{subfigure}{.5\textwidth}
-    \centering
-    \includegraphics[width=0.75\textwidth]{full_terrain.pdf}    \caption[short]{Original terrain.}
-\end{subfigure}%
-\begin{subfigure}{.5\textwidth}
-    \centering
-    \includegraphics[width=0.75\textwidth]{terrain_model_ols.pdf}
-    \caption[short]{Terrain as predicted using OLS. Highest polynomial degree in $x$ and $y$ is 38.}
-\end{subfigure}
-\begin{subfigure}{.5\textwidth}
-    \centering
-    \includegraphics[width=0.75\textwidth]{terrain_model_ridge.pdf}
-    \caption[short]{Terrain as predicted using Ridge. Highest polynomial degree in $x$ and $y$ is 47 and the hyperparameter $\lambda = 4.642\cdot 10^{-11}$.}
-\end{subfigure}%
-\begin{subfigure}{.5\textwidth}
-    \centering
-    \includegraphics[width=0.75\textwidth]{terrain_model_lasso.pdf}
-    \caption[short]{Terrain as predicted using Lasso. Highest polynomial degree in $x$ and $y$ is 45 and hyperparameter $\lambda = 5\cdot 10^{-6}$.}
-\end{subfigure}
-\centering\caption[short]{\label{fig:terrain} Terrain data visualized with colors representing terrain height.}
-\end{figure*}
-
-\section{Discussion}\label{sec:discussion}
-We observe a higher $R^2$ score and lower MSE for the Franke data with a standard deviation $> 1$. Comparing the Franke function with the terrain data we would expect the methods to perform better on the former, due to the smoothness of the data. Increasing the noise of the Franke function increases the MSE and reduces the $R^2$ score, mimicking the noise in the terrain data. Choosing a flatter terrain to model could increase the $R^2$ score, as when reducing the noise of the Franke function.
-
-\subsection{Confidence Interval of Regression Coefficients}
-The 95\% confidence intervals (CI) for $\boldsymbol{\beta}$ were calculated for the case where the highest polynomial degree was 5 in $x$ and $y$. The intervals are represented in Fig. \ref{fig:CI_beta_franke_eps05}. We see that the lowest order polynomials have confidence intervals with a narrow range of values, suggesting that we are close to the true values of these coefficients. As the polynomial degree increases, we see that the CI widens, until around degree 15 where the CI starts narrowing again. The coefficients for the highest order polynomials appear to be closer to their true values than the polynomials around order 10, but not as close as the lowest order polynomials.
-
-\subsection{Comparison of Regression Methods}
-The Franke function is often used to test methods in interpolation problems, and it can help us review the performance of our methods.
-55555555555555When reviewing the applicability of the Franke function as a way to benchmark the regression methods on terrain, the results were disappointing555555555555. The data generated by the Franke function with the random noise was too simple of a dataset to benchmark our regression methods well for the terrain data###. Because the noise was uniformly distributed the methods predicted the true Franke function quite easily even for complexities like polynomial degree five. If by contrast we used polynomial degree five on the terrain data, we would not get a good estimate for any of the features in the terrain.
-
-Ridge outperformed OLS for high model complexities (e.g. degree 12 for Franke or degree 50-60 for terrain) where Ridge had a score of $R^2 = 0.95$ and OLS had $R^2 = 0.92$ on the Franke dataset, this is due to how Ridge penalizes the overfitting, by the hyperparameter. Lasso performs worst on the Franke dataset, this is due to some parameters being truncated to zero. Lasso may perform better for higher complexities since it is less likely to overfit than both OLS and Ridge. For the complexities evaluated in the study Lasso did not perform better than OLS or Ridge.
-
-None of the methods were able to predict the features of the terrain data as seen in Fig. \ref{fig:terrain}. All regression methods returned a smooth average over the area with a clear loss of features. The loss of features are because we are fitting the model using polynomials, which will yield smooth functions. The terrain data have a lot of differences in height between points. When using our models to predict the data an average is produced and a lot of information about height is lost. If the models took all this variability into account they would grossly overfit. New predicted points will simply be distributed around the mean within variance. None of the tested regression method preformed particularly well on the the terrain data. Ridge preformed best with an $R^2 = 0.70$. OLS and Lasso were both outperformed by ridge (see table \ref{tab:best_p_terrain}).
-
-
-\subsection{Bias-Variance Tradeoff}
-As we increase the complexity we risk that the model gets biased towards the dataset it has been trained on. In Fig. \ref{fig:mse_train_test_ols_franke_eps05} we see how the MSE for the test data increases relative to the increase in complexity, this corresponds to when the model gets biased and overfitting occurs. We would expect the MSE for the training data to decrease to zero as the complexity increases, but as we see in Fig. \ref{fig:mse_train_test_ols_franke_eps05} the MSE increases along with the test data. The increase of training MSE is because we train the model with the Franke function with added stochastic noise, while applying the true data on model.
-
-Increasing the polynomial degree will reduce the variance, as the model can fit closer to each datapoint. For a certain polynymial degree the model becomes biased to the data, and we observe overfitting, which results in a poor model.
-
-Applying the Ridge regression method to the same data we see a similar trend. Even for different penalty terms $\lambda$ the test MSE is at its lowest around polynomial degree 4-6, as seen in Fig. \ref{fig:mse_train_test_ridge_franke_eps065}. We see that Ridge is less likely to overfit and we observe that as the penalty increases, the MSE increases. There is an overfitting for the largest $\lambda$, but we consider this is a statistical outlier, as it performs worse than OLS. We would not expect Ridge to perform worse than OLS, as with the penalty term $\lambda = 0$ Ridge is equal to OLS.
-
-Lasso regression on the same data yields MSEs for both test and training data that decreases with complexity. In Fig. \ref{fig:mse_train_test_lasso_franke_eps065} the choice of $\lambda$ has a larger impact on the MSE than the complexity. For Lasso we observe no overfit for the chosen interval, this is due to the method shrinking some of the coefficients to zero. Even for complexity much larger than for both OLS and Ridge regression the MSE becomes smaller.
-
-On the terrain data OLS regression gives a similar result to the Franke function data. Fig. \ref{fig:mse_train_test_ols_terrain_181x91} shows that train error becomes a quite smooth slope. The test MSE becomes jagged and unstable for high complexity and is at risk of overfitting.
-
-
-\subsection{Results and Applicability of Regression Models}
-
-When it comes to the Franke function our methods all made models with reasonable scores in relation to the true function. This changed if we split the dataset into train and test data, and used the test data to verify our model. We interpreted this as reasonable since the noise was so large in scale compared to the rest of the dataset. When we switched to the terraindata we soon realized that our methods were not really that good at representing the terrain we wanted to parameterize. Since the "noise" in the terrain could in many cases be significant features of interest like areas with water, we needed to increase the complexity of our model by a lot. This meant in turn that the model would be bad at predicting unknown data, however for the most part we were more interested in replicating that one spesific terrain. Even when increasing the complexity we experienced a large loss of features as seen in Fig. \ref{fig:terrain}, where none of the models seemed to be able to give good results.
-
-\subsection{Conclusions}
-
-Summing up the analysis of this study we see that our regression methods perform reasonable when predicting a function like the Franke function. However when our model performs poorly when attempting to parameterize a varied terrain. This is due to the model being based on polynomials which cannot represent the varied and near discontinuous changes in the terrain. Since the polynomials are smooth we experience a loss of features in the terrain, rendering our model useless at accurately representing the data. Furthermore the model also does not perform well at predicting terrain other than the terrain we have built our model upon. One interpretation is that if we want a model that is general enough for this purpose, the loss of features from the current dataset would be even more severe. Again due to the limiting factors of building the model on polynomials. The types of datasets we could predict would tend to be smoother than the Norwegian terrain that we attempted to parameterize in this paper.
-
-
-
-% \begin{figure}[b]
-% \includegraphics{data1_cho}% Here is how to import EPS art
-% \caption{\label{fig:epsart} A figure caption. The figure captions are
-% automatically numbered.}
-% \end{figure}
-
-% \begin{figure*}
-% \includegraphics{fig_2}% Here is how to import EPS art
-% \caption{\label{fig:wide}Use the figure* environment to get a wide
-% figure that spans the page in \texttt{twocolumn} formatting.}
-% \end{figure*}
-
-
-% \begin{table*}
-% \caption{\label{tab:table3}This is a wide table that spans the full page
-% width in a two-column layout. It is formatted using the
-% \texttt{table*} environment. It also demonstates the use of
-% \textbackslash\texttt{multicolumn} in rows with entries that span
-% more than one column.}
-% \begin{ruledtabular}
-% \begin{tabular}{ccccc}
-%  &\multicolumn{2}{c}{$D_{4h}^1$}&\multicolumn{2}{c}{$D_{4h}^5$}\\
-%  Ion&1st alternative&2nd alternative&lst alternative
-% &2nd alternative\\ \hline
-%  K&$(2e)+(2f)$&$(4i)$ &$(2c)+(2d)$&$(4f)$ \\
-%  Mn&$(2g)$\footnote{The $z$ parameter of these positions is $z\sim\frac{1}{4}$.}
-%  &$(a)+(b)+(c)+(d)$&$(4e)$&$(2a)+(2b)$\\
-%  Cl&$(a)+(b)+(c)+(d)$&$(2g)$\footnotemark[1]
-%  &$(4e)^{\text{a}}$\\
-%  He&$(8r)^{\text{a}}$&$(4j)^{\text{a}}$&$(4g)^{\text{a}}$\\
-%  Ag& &$(4k)^{\text{a}}$& &$(4h)^{\text{a}}$\\
-% \end{tabular}
-% \end{ruledtabular}
-% \end{table*}
-
-% \begin{table}[b]
-% \caption{\label{tab:table4}%
-% Numbers in columns Three--Five are aligned with the ``d'' column specifier
-% (requires the \texttt{dcolumn} package).
-% Non-numeric entries (those entries without a ``.'') in a ``d'' column are aligned on the decimal point.
-% Use the ``D'' specifier for more complex layouts. }
-% \begin{ruledtabular}
-% \begin{tabular}{ccddd}
-% One&Two&
-% \multicolumn{1}{c}{\textrm{Three}}&
-% \multicolumn{1}{c}{\textrm{Four}}&
-% \multicolumn{1}{c}{\textrm{Five}}\\
-% %\mbox{Three}&\mbox{Four}&\mbox{Five}\\
-% \hline
-% one&two&\mbox{three}&\mbox{four}&\mbox{five}\\
-% He&2& 2.77234 & 45672. & 0.69 \\
-% C\footnote{Some tables require footnotes.}
-%   &C\footnote{Some tables need more than one footnote.}
-%   & 12537.64 & 37.66345 & 86.37 \\
-% \end{tabular}
-% \end{ruledtabular}
-% \end{table}
-
-
-% Tables~\ref{tab:table1}, \ref{tab:table3}, \ref{tab:table4}, and \ref{tab:table2}%
-% \begin{table}[b]
-% \caption{\label{tab:table2}
-% A table with numerous columns that still fits into a single column.
-% Here, several entries share the same footnote.
-% Inspect the \LaTeX\ input for this table to see exactly how it is done.}
-% \begin{ruledtabular}
-% \begin{tabular}{cccccccc}
-%  &$r_c$ (\AA)&$r_0$ (\AA)&$\kappa r_0$&
-%  &$r_c$ (\AA) &$r_0$ (\AA)&$\kappa r_0$\\
-% \hline
-% Cu& 0.800 & 14.10 & 2.550 &Sn\footnotemark[1]
-% & 0.680 & 1.870 & 3.700 \\
-% Ag& 0.990 & 15.90 & 2.710 &Pb\footnotemark[2]
-% & 0.450 & 1.930 & 3.760 \\
-% Au& 1.150 & 15.90 & 2.710 &Ca\footnotemark[3]
-% & 0.750 & 2.170 & 3.560 \\
-% Mg& 0.490 & 17.60 & 3.200 &Sr\footnotemark[4]
-% & 0.900 & 2.370 & 3.720 \\
-% Zn& 0.300 & 15.20 & 2.970 &Li\footnotemark[2]
-% & 0.380 & 1.730 & 2.830 \\
-% Cd& 0.530 & 17.10 & 3.160 &Na\footnotemark[5]
-% & 0.760 & 2.110 & 3.120 \\
-% Hg& 0.550 & 17.80 & 3.220 &K\footnotemark[5]
-% &  1.120 & 2.620 & 3.480 \\
-% Al& 0.230 & 15.80 & 3.240 &Rb\footnotemark[3]
-% & 1.330 & 2.800 & 3.590 \\
-% Ga& 0.310 & 16.70 & 3.330 &Cs\footnotemark[4]
-% & 1.420 & 3.030 & 3.740 \\
-% In& 0.460 & 18.40 & 3.500 &Ba\footnotemark[5]
-% & 0.960 & 2.460 & 3.780 \\
-% Tl& 0.480 & 18.90 & 3.550 & & & & \\
-% \end{tabular}
-% \end{ruledtabular}
-% \footnotetext[1]{Here's the first, from Ref.~\onlinecite{feyn54}.}
-% \footnotetext[2]{Here's the second.}
-% \footnotetext[3]{Here's the third.}
-% \footnotetext[4]{Here's the fourth.}
-% \footnotetext[5]{And etc.}
-% \end{table}
-
-% \begin{acknowledgments}
-
-% \end{acknowledgments}
-
-% \appendix
-
-% \section{Appendixes}
-
-% The \nocite command causes all entries in a bibliography to be printed out
-% whether or not they are actually referenced in the text. This is appropriate
-% for the sample file to show the different styles of references, but authors
-% most likely will not want to use it.
-\nocite{*}
-
-\bibliography{main}% Produces the bibliography via BibTeX.
-
-\end{document}
-%
-% ****** End of file apssamp.tex ******
-
-
-
-% ****** Start of file apssamp.tex ******
-%
-%   This file is part of the APS files in the REVTeX 4.2 distribution.
-%   Version 4.2a of REVTeX, December 2014
-%
-%   Copyright (c) 2014 The American Physical Society.
-%
-%   See the REVTeX 4 README file for restrictions and more information.
-%
-% TeX'ing this file requires that you have AMS-LaTeX 2.0 installed
-% as well as the rest of the prerequisites for REVTeX 4.2
-%
-% See the REVTeX 4 README file
-% It also requires running BibTeX. The commands are as follows:
-%
-%  1)  latex apssamp.tex
-%  2)  bibtex apssamp
-%  3)  latex apssamp.tex
-%  4)  latex apssamp.tex
-%
-\documentclass[%
- reprint,
-%superscriptaddress,
-%groupedaddress,
-%unsortedaddress,
-%runinaddress,
-%frontmatterverbose,
-%preprint,
-%preprintnumbers,
-nofootinbib,
-%nobibnotes,
-%bibnotes,
- amsmath,amssymb,
- aps,
-%pra,
-%prb,
-%rmp,
-%prstab,
-%prstper,
-%floatfix,
-]{revtex4-2}
-
-\usepackage{graphicx}% Include figure files
-\usepackage{dcolumn}% Align table columns on decimal point
-\usepackage{bm}% bold math
-\usepackage{hyperref}% add hypertext capabilities
-\usepackage{subcaption}
-%\usepackage[mathlines]{lineno}% Enable numbering of text and display math
-%\linenumbers\relax % Commence numbering lines
-
-%\usepackage[%showframe,%Uncomment any one of the following lines to test
-%scale=0.7, marginratio={1:1, 2:3}, ignoreall,% default settings
-%%text={7in,10in},centering,
-%margin=1.5in,
-%total={6.5in,8.75in}, top=1.2in, left=0.9in, includefoot,
-%height=10in,a5paper,hmargin={3cm,0.8in},
-%]{geometry}
-
-\begin{document}
-
-\preprint{APS/123-QED}
-
-\title{Applications of Regression Methods on Terrain-data}% Force line breaks with \\
-% \thanks{A footnote to the article title}%
-
-\author{Christer Dreierstad, Hans Erlend Bakken Glad}
- %Lines break automatically or can be forced with \\
-\author{Torbjørn Lode Gjerberg}
-\altaffiliation{Institute of Informatics, University of Oslo}
-\author{Stig-Nicolai Foyn}
-\altaffiliation{Institute of Geoscience, Univerity of Oslo}
-\affiliation{Institute of Physics, University of Oslo}
-
-
-\date{\today}
-
-\begin{abstract}
-Applying methods of regression in combination with resampling we studied the effects of increasing the complexity of our fitted model. The methods are applied on the Franke function with normal distributed datapoints and an image of a terrain. When increasing the complexity we observe overfitting for Ordinary Least Squares (OLS) for polynomial degree $>7$. Further we apply Ridge and Lasso regression, which are methods that penalize the complexity proportionally the hyperparameter $\lambda$, yielding a more stable and/or smooth model for larger values of $\lambda$ when the complexity is high or there is a high variance in the data points. For Ridge we observe overfitting for the same polynomial degree as OLS, where the overfit is related to the hyperparameter. For Lasso there is no observed overfitting. Applying our methods on the terrain data we observe that the $R^2$ score is greatly reduced compared to the Franke function, which is related to how noisy the terrain data is.
-\end{abstract}
-
-%\keywords{Computational Science, Regression Methods: Ordinary Least Squares, Ridge, Lasso}%Use showkeys class option if keyword
-\maketitle
-
-%\tableofcontents
-
-
-\section{Introduction\label{sec:intro}}
-By regression analysis with resampling we will predict a model for the Franke function applying normal distributed datapoints, this will serve as a benchmark for our methods. Having a model that behaves as one would expect for the case of the Franke function, we then apply our methods on a real dataset. Our real data will consist of random terrain data in the form of a grey-scale image, where the pixel value is related to the curvature of the terrain. The aim of this paper to make a polynomial fit or parametrization of our datasets. The datasets are two dimensional, which requires us to modify the design matrix such that a given polynomial degree is expressed for x, y and the combination of x and y.
-
-For regression analysis we will consider the following methods; OLS, Ridge and Lasso, while our method for  resampling is Cross-Validation. We will study the MSE as we increase the complexity, i.e. increase the polynomial degree of the fit, specifically we will compare the MSE when we apply our model on the train and test data. This leads to a discussion of the bias-variance tradeoff and overfitting of the model. Both these subjects will be a central discussion in this paper. We will study how the MSE depends on the hyperparameters in Ridge and Lasso, which penalize the complexity of the fitted model. Further the confidence intervals of the coefficients $\beta$ will be discussed.
-
-
-
-\section{Data}
-\subsection{Data Generated using the Franke Function}
-We initially generate artificial data using the Franke function;
-%
-\begin{align*}
-f(x,y) = &\frac{3}{4} \exp\left( -\frac{(9x-2)^2}{4} -\frac{(9y - 2)^2}{4} \right) \\+&\frac{3}{4} \exp\left( -\frac{(9x+1)^2}{49} - \frac{(9y + 1)^2}{10} \right) \\+&\frac{1}{2} \exp\left( -\frac{(9x-7)^2}{4} - \frac{(9y - 3)^2}{4} \right)\\-&\frac{1}{5} \exp\left( -(9x-4)^2 - (9y - 7)^2 \right)
-\end{align*}
-%
-so that the height $z$ of the terrain is
-%
-\begin{equation*}
-\boldsymbol{z} = f(\boldsymbol{x},\boldsymbol{y}) + \boldsymbol{\epsilon}, \quad \boldsymbol{x}, \boldsymbol{y}, \boldsymbol{z} \in \mathbb{R}^{n}
-\end{equation*}
-%
-where $\boldsymbol{\epsilon}$ represents normal distributed stochastic noise, i.e. $\epsilon_i = \mathcal{N}(0, \sigma^2)$. This gives us a set of data that resembles terrain which we can use to test our regression methods on.
-
-\subsection{Real Terrain Data}
-After testing our algorithms on artificial data we will introduce real terrain data. This data is downloaded from \cite{terrain} and represents an area in Norway. This dataset is 3601 by 1801 pixels, with each pixel taking a value that represents the terrain height.
-
-Due to the size of the dataset we will need to downscale the data in order to get reasonable runtimes with our algorithms. We choose to scale down the data by a factor of 20 along both dimensions, resulting in a dataset that is 400 times smaller than the complete dataset. This appears to give a good balance between runtime and data resolution. The individual datapoints are also scaled so that $x$, $y$ and $z$ only take values between 0 and 1.
-
-
-
-
-
-
-
-
-
-
-\section{Method}
-
-\subsection{Ordinary Least Squares}
-
-
-\subsubsection{The Design Matrix}
-%
-Approximating an unknown data set with regression requires that one has a set of independent explanatory variables. This is organised as a set of parameters in a design matrix. This way an unknown dataset can be approximated with a linear combination of the design matrix $X$ and some vector with coefficients $\beta$, scaling our parameters. The goal is that the dataset can be represented, within acceptable accuracy, using this linear combination assuming there is some irreducible noise $\epsilon$ inherent to the dataset. The data can then be represented as
-%
-\begin{equation}\label{eq:datarepresentation}
-    \boldsymbol{y} = \boldsymbol{X}\boldsymbol{\beta} + \epsilon.
-\end{equation}
-%
-To approximate the Franke function, and later the terrain dataset, we used a design matrix containing combinations of polynomials. The complexity of the model was specified by the maximum polynomial degree in the matrix. In this study we want to fit a model that predicts curvature of a function or terrain dataset at a given position in the xy-plane. The data points constructing the polynomials will be then be positional coordinates in the $x,y$-plane. In the final part of the paper when we analyze terrain data we will attempt to find a polynomial parameterization of the data.
-
-
-\subsubsection{The Least Squares Approximation}
-Given a design matrix with parameters, we would like to find the optimal $\beta$ to scale our model, so that it best fits the dataset. Given that the matrix consists of polynomials it can be written in terms of the parameters $x_i$, which multiplied with the coefficients $\beta$ forms our model
-%
-\begin{equation*}\label{eq:Model}
-    \boldsymbol{\tilde{y}} = \begin{bmatrix}
-    1& x_{0}^{1} & \dots & x_{0}^{n-1} \\
-    1 & x_{1}^{1} & \dots   & x_{1}^{n-1}   \\
-    \vdots & \vdots  & \ddots & \vdots \\
-    1   & x_{m-1}^{1} & \dots  & x_{m-1}^{n-1}
-    \end{bmatrix}
-    \begin{bmatrix}
-    \beta_{0} \\
-    \beta_{1} \\
-    \vdots \\
-    \beta_{m-1}
-    \end{bmatrix},
-\end{equation*}
-%
-for the one dimensional case. Expanding to two dimensions all polynomial degree combinations of $x$ and $y$ must be present in the design matrix, that is $x^iy^j$ $i,j \in [0,n-1]$, where $n-1$ is the maximum polynomial degree. To find $\beta$ we minimize the cost function $C(\beta)$, which in this case is the MSE. The MSE is given by the average of the sum over the errors in our model
-%
-\begin{equation*}\label{eq:MSE}
-    C(\beta) = \frac{1}{n} \sum_{i=0}^{n-1} (y_{i} - \tilde{y}_i )^{2}.
-\end{equation*}
-%
-The above equation can be written in terms of the model we introduced in Eq. \eqref{eq:datarepresentation}, with this we can derive the cost function and find the minimum of the function;
-%
-\begin{equation*}
-    C(\beta) = \frac{1}{n} \sum_{i=0}^{n-1} (\boldsymbol{y} - \boldsymbol{X}\boldsymbol{\beta})^T (\boldsymbol{y} - \boldsymbol{X}\boldsymbol{\beta}).
-\end{equation*}
-%
-The minimum is found where the derivative of the function is equal to zero;
-%
-\begin{align*}
-    \frac{\partial C(\beta)}{\partial \beta_j} &= \frac{1}{n} \sum_{i=0}^{n-1} (\boldsymbol{y} - \boldsymbol{X}\boldsymbol{\beta})^T (\boldsymbol{y} - \boldsymbol{X}\boldsymbol{\beta}) \\&
-    = -\frac{2}{n}\left[\sum_{i=0}^{n-1}x_{ij}(y_{i} - \beta_{0}x_{i0} \dots -\beta_{p-1}x_{i p-1})^{2}\right] \\&
-    = -\frac{2}{n} \boldsymbol{X}^T (\boldsymbol{y} -\boldsymbol{X}\boldsymbol{\beta}) = 0.
-\end{align*}
-%
-The equation for $\beta$ is now given by:
-%
-\begin{equation}\label{eq:beta}
-    \boldsymbol{\beta} = (\boldsymbol{X}^{T}\boldsymbol{X})^{-1}\boldsymbol{X}^{T}\boldsymbol{y}.
-\end{equation}
-%
-The last step to find the $\beta$ is to invert the matrix $\boldsymbol{X}^T\boldsymbol{X}$. For the case when $\boldsymbol{X}^T\boldsymbol{X}$ is close to singular there may be stability issues when inverting the matrix. In our case we tackle the problem where the matrix is close to singular by Moore-Penrose semi-inversion, which utilizes the singular value decomposition when inverting the matrix. We then end up with the following equation for the predicted model:
-%
-\begin{equation*}\label{eq:OLS}
-    \boldsymbol{\tilde{y}} = \boldsymbol{X}\boldsymbol{\beta} = \boldsymbol{X}(\boldsymbol{X}^{T}\boldsymbol{X})^{-1}\boldsymbol{X}^{T}\boldsymbol{y}.
-\end{equation*}
-%
-With the above equation a fit can be made using polynomial combinations of the positional parameters to benchmark our model on the Franke function. Later OLS is used to fit a model with the same types of parameters to the terrain data to attempt to make a parameterization of the terrain.
-
-\subsubsection{Confidence Intervals}
-It is natural when we design a model to be interested in how well the model fits the real data. In particular it is relevant to review which parts of the model that are most important and which parts that are less relevant. To perform such an analysis we need to find the confidence interval of the $\beta$ values that we found in Eq. \eqref{eq:beta}.
-The confidence interval of a normal distribution can be found by\footnote{See \cite{ModernStat} page 387 Eq. (8.5)}:
-%
-\begin{equation*}\label{eq:CI}
-    \left(\bar{X} - z_{\alpha/2}\frac{\sigma}{\sqrt{n}}, \bar{X} + z_{\alpha/2}\frac{\sigma}{\sqrt{n}}\right),
-\end{equation*}
-%
-where $\bar{X}$ in our case is $\beta$ and $\frac{\sigma}{\sqrt{n}}$ is the sample standard deviation of $\beta$, $s_{\beta}$.
-If the confidence interval of some model has a small span, one can be confident within some probability (e.g. $95\%$) that the model is close to the real solution.
-The variance of our coefficients can be found by reviewing the variance in $\boldsymbol{{\beta}}$, given by
-%
-\begin{align*}
-    Var(\boldsymbol{\hat{\beta}}) &= Var((\boldsymbol{X}^{T}\boldsymbol{X})^{-1}\boldsymbol{X}^{T}\boldsymbol{X}(\boldsymbol{\beta} + \epsilon))\\
-    &= \mathbb{E}[(\boldsymbol{X}^{T}\boldsymbol{X})^{-1}\boldsymbol{X}^{T}\boldsymbol{X}(\boldsymbol{\beta} + \epsilon)^T\\
-    &\times (\boldsymbol{X}^{T}\boldsymbol{X})^{-1}\boldsymbol{X}^{T}\boldsymbol{X}(\boldsymbol{\beta} + \epsilon)],
-\end{align*}
-%
-when using equations \eqref{eq:datarepresentation} and \eqref{eq:beta}. The terms containing $\beta$ will cancel, leaving
-\begin{align*}
-    &= \mathbb{E}[((\boldsymbol{X}^{T}\boldsymbol{X})^{-1}\boldsymbol{X}^{T}\epsilon)^{T} (\boldsymbol{X}^{T}\boldsymbol{X})^{-1}\boldsymbol{X}^{T}\boldsymbol{X} \epsilon)]\\
-    &= (\boldsymbol{X}^{T}\boldsymbol{X})^{-1} \boldsymbol{X}^{T} \mathbb{E}[\epsilon \epsilon^{T}] \boldsymbol{X} (\boldsymbol{X}^{T}\boldsymbol{X})^{-1}\\
-    &= (\boldsymbol{X}^{T}\boldsymbol{X})^{-1} \sigma^{2}.
-\end{align*}
-%
-
-With the above equation we can write the confidence interval for our model as:
-%
-\begin{equation*}\label{eq:CIbeta}
-    (\boldsymbol{\beta} -  \sqrt{(\boldsymbol{X}^{T}\boldsymbol{X})^{-1} \sigma^{2}}, \boldsymbol{\beta} + \sqrt{(\boldsymbol{X}^{T}\boldsymbol{X})^{-1} \sigma^{2}}).
-\end{equation*}
-%
-
-
-\subsection{Ridge and Lasso Regression Methods}
-The same ideas that are utilized in Ridge regression can be found in the "ad hoc" way of solving singularities in matrices in linear algebra. The idea is to add some hyperparameter $\lambda$ to avoid zeros along the diagonal of the matrix, thus being able to give an estimate to the inverted singular matrix. Using the hyperparameter results in an estimate that can be considered reasonable for the determinant of the matrix. Ridge uses a hyperparameter $\lambda$ to penalize the $\beta$ coefficients of our model. This is done by adding the $\lambda$ to the diagonal of the matrix that we are inverting. In some cases where the noise of the dataset is high, Ridge can help reduce overfitting.
-%
-\begin{equation}\label{eq:Ridge}
-    \boldsymbol{y} = \boldsymbol{X}\boldsymbol{\beta} = \boldsymbol{X}(\boldsymbol{X}^{T}\boldsymbol{X} + \lambda \boldsymbol{I})^{-1}\boldsymbol{X}^{T}\boldsymbol{y}.
-\end{equation}
-%
-Ridge and Lasso are both shrinkage methods. Ridge penalizes the coefficients of the fitted model by uniformly shrinking them, while Lasso translates each coefficient by $\lambda$, truncating at zero\footnote{See The Elements of Statistical Learning\cite{Hastie} page 69}. In the case of Ridge the coefficients go to $0$ as $\lambda \rightarrow \infty$. For Lasso we used scikit-learn, since we were more interested in the methods results rather than the method itself.
+Ridge penalizes the coefficients of the fitted model by uniformly shrinking them, while Lasso translates each coefficient by $\lambda$, truncating at zero\footnote{See The Elements of Statistical Learning \cite{Hastie} page 69}. In the case of Ridge the coefficients go to $0$ as $\lambda \rightarrow \infty$. For Lasso we used scikit-learn, since we were more interested in the methods results rather than the method itself.
 
 \subsection{K-Fold Cross-Validation}
 When working with scarce data one can use a resampling method for validating the prediction. By splitting the data into subsets; a test and a training set, we performs K validations of the predictive model. For K-fold CV
 we split the data into K folds, where one of the folds serve as the test set and the rest is used to train the model. This is repeated K times until all the folds have been used as a test set once. Each repetition results in a slightly different model where the evaluation scores are retained, e.g. MSE or R$^2$ score, which can be used to decide on the best model.
 
-A typical choice of folds is 5 or 10. A lower number of folds $K$ will return a smaller variance, but a larger bias as less data is used for training. With very small datasets this bias is likely to affect the outcome\footnote{See The Elements of Statistical Learning\cite{Hastie} page 243}. This bias and variance is inherent to the cross-validation itself for a given number of parameters.
+A typical choice of folds is 5 or 10. A lower number of folds $K$ will return a smaller variance, but a larger bias as less data is used for training. With very small datasets this bias is likely to affect the outcome\footnote{See The Elements of Statistical Learning \cite{Hastie} page 243}. This bias and variance is inherent to the cross-validation itself for a given number of parameters.
 
 An added bonus of performing a Cross-Validation is that we can scale down the dataset for the terrain data, thus reducing the dataset, to reduce calculations in our algorithm and improve run times, while still producing a satisfactory model.
 
@@ -801,13 +257,13 @@ An added bonus of performing a Cross-Validation is that we can scale down the da
 \end{figure}
 
 \subsection{Estimating Bias and Variance}
-The full prediction error consists of a variance, bias and an irreducible error. When few parameters are used in a regression the bias becomes high. If complexity is increased by adding more parameters, i.e. increasing polynomial degree of the fit, the bias will decrease. On the other hand low complexity means there will be a lower variance and increasing complexity will increase the variance. This is the bias-variance tradeoff which can be derived from
+The full prediction error consists of a variance, bias and an irreducible error. When few parameters are used in a regression the bias becomes high. If complexity is increased by adding more parameters, i.e. increasing polynomial degree of the fit, the bias will decrease. On the other hand low complexity means there will be a lower variance and increasing complexity will increase the variance. This is the bias and variance of a model which can be derived from the cost function:
 %
 \begin{equation*}
-   C(\boldsymbol{X}, \boldsymbol{\beta}) = \frac{1}{n} \sum_{i=0}^{n-1} (y_i - \tilde{y_i}) =  \mathbb{E}[(\boldsymbol{y} - \boldsymbol{\tilde{y}})^2].
+   C(\boldsymbol{X}, \boldsymbol{\beta}) = \frac{1}{n} \sum_{i=0}^{n-1} (y_i - \tilde{y_i}) =  \mathbb{E}[(\boldsymbol{y} - \boldsymbol{\tilde{y}})^2],
 \end{equation*}
 %
-where $y = f(x) + \epsilon$. To solve this we add and subtract $\mathbb{E}$ and insert the expression for $y$
+where $y = f(x) + \epsilon$. To find expressions for the bias, variance and irreducible error we add and subtract $\mathbb{E}$ and insert the expression for $y$
 %
 \begin{align*}
     &=\mathbb{E}[(f + \epsilon - \tilde{y} + \mathbb{E}[\tilde{y}] - \mathbb{E}[\tilde{y}])^2]\\
@@ -928,10 +384,9 @@ We observe a higher $R^2$ score and lower MSE for the Franke data with a standar
 The 95\% confidence intervals (CI) for $\boldsymbol{\beta}$ were calculated for the case where the highest polynomial degree was 5 in $x$ and $y$. The intervals are represented in Fig. \ref{fig:CI_beta_franke_eps05}. We see that the lowest order polynomials have confidence intervals with a narrow range of values, suggesting that we are close to the true values of these coefficients. As the polynomial degree increases, we see that the CI widens, until around degree 15 where the CI starts narrowing again. The coefficients for the highest order polynomials appear to be closer to their true values than the polynomials around order 10, but not as close as the lowest order polynomials.
 
 \subsection{Comparison of Regression Methods}
-The Franke function is often used to test methods in interpolation problems, and it can help us review the performance of our methods.
-55555555555555When reviewing the applicability of the Franke function as a way to benchmark the regression methods on terrain, the results were . The data generated by the Franke function with the random noise was too simple of a dataset to benchmark our regression methods well for the terrain data###. Because the noise was uniformly distributed the methods predicted the true Franke function quite easily even for complexities like polynomial degree five. If by contrast we used polynomial degree five on the terrain data, we would not get a good estimate for any of the features in the terrain.
+The Franke function is often used to test methods in interpolation problems, and it can help us review the performance of our methods. When reviewing the applicability of the Franke function as a way to benchmark the regression methods, we observed that the methods were not equally applicable in parameterizing the terrain data. Because the noise was uniformly distributed the methods predicted the true Franke function quite easily even for complexities like polynomial degree five. If by contrast we used polynomial degree five on the terrain data, we would not get a good estimate for any of the features in the terrain.
 
-Ridge outperformed OLS for high model complexities (e.g. degree 12 for Franke or degree 50-60 for terrain) where Ridge had a score of $R^2 = 0.95$ and OLS had $R^2 = 0.92$ on the Franke dataset, this is due to how Ridge penalizes the overfitting, by the hyperparameter. Lasso performs worst on the Franke dataset, this is due to some parameters being truncated to zero. Lasso may perform better for higher complexities since it is less likely to overfit than both OLS and Ridge. For the complexities evaluated in the study Lasso did not perform better than OLS or Ridge.
+Ridge outperformed OLS for high model complexities (e.g. degree 12 for Franke or degree 40-60 for terrain) where Ridge had a score of $R^2 = 0.952$ and OLS had $R^2 = 0.924$ (with 100x100 grid of datapoints) on the Franke dataset, this is due to how Ridge penalizes the overfitting, by the hyperparameter. Lasso performs worst on the Franke dataset, this is due to some parameters being truncated to zero. Lasso may perform better for higher complexities since it is less likely to overfit than both OLS and Ridge. For the complexities evaluated in the study Lasso did not perform better than OLS or Ridge.
 
 None of the methods were able to predict the features of the terrain data as seen in Fig. \ref{fig:terrain}. All regression methods returned a smooth average over the area with a clear loss of features. The loss of features are because we are fitting the model using polynomials, which will yield smooth functions. The terrain data have a lot of differences in height between points. When using our models to predict the data an average is produced and a lot of information about height is lost. If the models took all this variability into account they would grossly overfit. New predicted points will simply be distributed around the mean within variance. None of the tested regression method preformed particularly well on the the terrain data. Ridge preformed best with an $R^2 = 0.70$. OLS and Lasso were both outperformed by ridge (see table \ref{tab:best_p_terrain}).
 
@@ -956,17 +411,41 @@ When it comes to the Franke function our methods all made models with reasonable
 
 Summing up the analysis of this study we see that our regression methods perform reasonable when predicting a function like the Franke function. However when our model performs poorly when attempting to parameterize a varied terrain. This is due to the model being based on polynomials which cannot represent the varied and near discontinuous changes in the terrain. Since the polynomials are smooth we experience a loss of features in the terrain, rendering our model useless at accurately representing the data. Furthermore the model also does not perform well at predicting terrain other than the terrain we have built our model upon. One interpretation is that if we want a model that is general enough for this purpose, the loss of features from the current dataset would be even more severe. Again due to the limiting factors of building the model on polynomials. The types of datasets we could predict would tend to be smoother than the Norwegian terrain that we attempted to parameterize in this paper.
 
-\section{Appendix}
+\appendix
 
-\begin{figure}[h]
-\includegraphics[width=\columnwidth]{franke_50x50_noiseless.pdf}
-\caption{\label{fig:franke_50x50_noiseless} Visualization of terrain generated by the Franke function, using 50x50 points and no noise.}
-\end{figure}
+\section{Figures}
+Figures \ref{appfig:franke_50x50_regressions} and \ref{appfig:mse_heatmap_franke_lasso_nonoise} are not discussed in the report, but are included since they may be interesting to the reader.
 
-\begin{figure}[h]
-\includegraphics[width=\columnwidth]{franke_ols_50x50_noiseless.pdf}
-\caption{\label{fig:franke_ols_50x50_noiseless} Visualization of OLS prediction on dataset as defined in Fig. \ref{fig:franke_50x50_noiseless}.}
-\end{figure}
+
+\begin{figure*}[t]
+\centering
+\begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{franke_50x50_noiseless.pdf}
+    \caption[short]{Visualization of terrain generated by the Franke function, using 50x50 points and no noise.}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{franke_ols_50x50_noiseless.pdf}
+    \caption[short]{Visualization of OLS prediction on dataset as defined in Fig. (a).}
+\end{subfigure}
+\begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{franke_ridge_50x50_noiseless.pdf}
+    \caption[short]{Visualization of Ridge prediction ( $\lambda = 1.247e \cdot 10^{-4}$) on dataset as defined in Fig. (a).}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{franke_lasso_50x50_noiseless.pdf}
+    \caption[short]{Visualization of Lasso prediction ($\lambda = 5 \cdot 10^{-5}$ on dataset as defined in Fig. (a).}
+\end{subfigure}
+\centering\caption[short]{\label{appfig:franke_50x50_regressions} Different types of regression on the Franke function.}
+\end{figure*}
+
+\begin{figure*}[t]
+\includegraphics[width=2\columnwidth]{mse_heatmap_franke_lasso_nonoise.pdf}
+\caption{\label{appfig:mse_heatmap_franke_lasso_nonoise} Test MSE from using Lasso regression with $\lambda = 1.274 \cdot 10^{-4}$ to fit a model on dataset generated by the Franke function.}
+\end{figure*}
 
 % \begin{figure}[b]
 % \includegraphics{data1_cho}% Here is how to import EPS art
