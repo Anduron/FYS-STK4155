@@ -12,6 +12,8 @@ import pandas as pd
 from imageio import imread
 import sys
 
+plt.rcParams.update({'font.size': 12})
+
 def FrankeFunction(x,y,n,noise,noisy=True):
     """
     Creates a franke function with or without noise.
@@ -34,7 +36,7 @@ def DataImport(filename):
     """
     Imports and downscales the terraindata, then plots it.
     """
-    sc = 10
+    sc = 50
     # Load the terrain
     terrain1 = imread(filename)
 
@@ -116,14 +118,30 @@ def ConfInterval(B, X, c=1.96):
     Finds the confidence interval of the Betas.
     """
 
-    SE = np.sqrt(np.diag(np.linalg.pinv(X.T @ X)))*c
-    B_min = B - SE
-    B_max = B + SE
+    B_var = np.sqrt(np.diag(np.linalg.pinv(X.T @ X)))*c
+    B_min = B - B_var
+    B_max = B + B_var
     return B_min, B_max
+
+def UnitTest():
+    """
+    A unit test that checks wheter our method
+    of ridge and ols are equal for lambda = 0
+    """
+    x = np.linspace(0,1,100)
+    y = np.linspace(0,1,100)
+    degree = 5
+    X = X_DesignMatrix(x,y,degree)
+    z = FrankeFunction(x,y,len(x),0,False)
+    eps = 1e-15
+    B_OLS = Coeff(X,z)
+    B_Ridge = CoeffRidge(X,z,0)
+    for i in range(len(B_OLS)):
+        assert B_OLS[i]-B_Ridge[i] < eps
 
 def kCrossValidation(x,y,z,deg_max,k=5,lmb=0):
     """
-    Performs a k-fold crossvalidation of a dataset.
+    Performs a k-fold crossvalidation on a dataset.
     """
 
     kfold = KFold(k,True,1)
@@ -195,38 +213,42 @@ def main():
     and Lasso with crossvalidation.
     """
 
-    np.random.seed(42)
+    UnitTest() #Performs the Unit Test
 
+    np.random.seed(42) #The meaning of live
 
-    n = 100
+    #Parameters, could have been arranged as input arguments
+    n = 50
     noise = 0.5
     test_S = 0.3
-    degree = 5
+    degree = 12
     k = 5
     deg_max = 12 #20
-    lmb = 0.001
+    lmb = 0.0001
     gamma = 0.0001
 
+    #Testing a range of lambdas and polynimials
     lmb_range = lmb*np.ones(13)
     for i in range(1, len(lmb_range)): lmb_range[i] = np.sqrt(10)*lmb_range[i-1]
 
+    #Parameters of the model
     x = np.sort(np.random.uniform(0,1,n))
     y = np.sort(np.random.uniform(0,1,n))
     x,y = np.meshgrid(x,y)
     x_1 = np.ravel(x)
     y_1 = np.ravel(y)
 
+    #The dataset
     z = FrankeFunction(x,y,n,noise)
     z_true = FrankeFunction(x,y,n,noise,False)
-
     z_1 = np.ravel(z)
-
     plotting_function(x,y,z,n)
 
 
     #Generating the Design Matrix
     X_DM = X_DesignMatrix(x_1,y_1,degree)
 
+    print("Points = %s, Degree = %s, $\\lambda$ = %s, $\\gamma$ = %s" %(n*n,degree,lmb,gamma))
 
     #Calls for solving tasks with OLS
     B = Coeff(X_DM,z_1)
@@ -237,11 +259,15 @@ def main():
     #MSE = metrics.mean_squared_error(z,np.reshape(z_predict,(n,n)))
     print("MSE = %s, R2 score = %s" %(MSE,r2_score))
     plotting_function(x,y,z_predict,n)
+
+    #Finding the confidence interval for OLS
     B_max, B_min = ConfInterval(B,X_DM)
     plt.figure()
-    plt.plot(range(len(B)), B, label="$\beta$")
-    plt.plot(range(len(B)), B_max, label="$\beta_min$")
-    plt.plot(range(len(B)), B_min, label="$\beta_min$")
+    plt.plot(range(len(B)), B, label="$ \\beta $")
+    plt.plot(range(len(B)), B_max, label="$ \\beta_{max} $")
+    plt.plot(range(len(B)), B_min, label="$ \\beta_{min} $")
+    plt.xlabel("$\\beta_{i}$")
+    plt.legend()
 
     #Calls for solving tasks with Ridge
     B_ridge = CoeffRidge(X_DM,z_1,lmb)
@@ -266,8 +292,8 @@ def main():
     #r2_score, MSE_test, MSE_train, bias, variance = kCrossValidation(x_train,y_train,z_train,deg_max,k)
     r2_score, MSE_test, MSE_train, bias, variance = kCrossValidation(x_1,y_1,z_1,deg_max,k)
 
+    #Crossvalidation on OLS
     degs = range(0,deg_max+1)
-
     plt.figure()
     plt.plot(degs, (MSE_test), label="test MSE")
     plt.plot(degs, (MSE_train), label="train MSE")
@@ -276,18 +302,16 @@ def main():
     plt.legend()
 
 
+    #Crossvalidation of Ridge + Plotting
     i = 0
     MSE_test_ridge = np.zeros((len(lmb_range),deg_max+1))
     MSE_train_ridge = np.zeros((len(lmb_range),deg_max+1))
-
-
-    print("Crossvalidation with ridge completion:")
     for l in lmb_range:
-        sys.stdout.write("\r%d %%" %(100*(i+1)/len(lmb_range)))
+        sys.stdout.write("\rCrossvalidation with ridge completion: %d %%" %(100*(i+1)/len(lmb_range)))
         r2_score_ridge, MSE_test_ridge[i,:], MSE_train_ridge[i,:], bias_ridge, variance_ridge = kCrossValidation(x_1,y_1,z_1,deg_max,k,l)
         i+=1
         sys.stdout.flush()
-
+    sys.stdout.flush()
 
     #fig = plt.figure()
     #ax = fig.add_subplot(111, projection='3d')
@@ -303,6 +327,8 @@ def main():
     ax.zaxis.set_major_locator(LinearLocator(10))
     ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
     plt.title("Crossvalidation of Ridge")
+    plt.xlabel("$Log10(\\lambda)$")
+    plt.ylabel("degrees")
 
     fig.colorbar(surf, shrink=0.5, aspect=5)
 
@@ -315,14 +341,16 @@ def main2():
     the function DataImport.
     """
 
+    #Parameters of the terrain
+    Tdegree = 45
+    Tlambda = 4.642e-11
+    Tgamma = 5e-6
+    UseLasso = True #Lasso can be slow, False by default
+
+    #Imports the downscaled terraindata and creates model parameters
     TerrainDataSet = DataImport('Norway_1arc.tif')
     ny = len(TerrainDataSet[:,0])
     nx = len(TerrainDataSet[0,:])
-
-
-    Tdegree = 50
-    Tlambda = 1e-4
-    Tgamma = 5e-6
 
     PosX = np.linspace(0,1,nx)
     PosY = np.linspace(0,1,ny)
@@ -331,35 +359,46 @@ def main2():
     PosZ = np.ravel(TerrainDataSet)/np.max(TerrainDataSet)
     X_Terrain = X_DesignMatrix(PosX,PosY,Tdegree)
 
-
+    #Plots the approximation of the terrain with OLS
     B_OLS_Terrain = Coeff(X_Terrain, PosZ)
     zp_OLS_Terrain = np.dot(X_Terrain,B_OLS_Terrain).reshape(ny,nx)
-
     plt.figure()
     plt.imshow( zp_OLS_Terrain , cmap="gray")
 
+    r2_terrain_OLS = metrics.r2_score(np.reshape(PosZ,(nx,ny)),np.reshape(zp_OLS_Terrain,(nx,ny)))
+    MSE_terrain_OLS = metrics.mean_squared_error(np.reshape(PosZ,(nx,ny)),np.reshape(zp_OLS_Terrain,(nx,ny)))
+    print("\nOLS:")
+    print("MSE OLS terrain = %s, \nR2 score OLS terrain = %s" %(MSE_terrain_OLS,r2_terrain_OLS))
 
+    #Plots the approximation of the terrain with Ridge
     B_Ridge_Terrain = CoeffRidge(X_Terrain, PosZ, Tlambda)
     zp_Ridge_Terrain = np.dot(X_Terrain,B_Ridge_Terrain).reshape(ny,nx)
-
     plt.figure()
     plt.imshow( zp_Ridge_Terrain , cmap="gray")
-    #print(zp_Ridge_Terrain)
 
+    r2_terrain_ridge = metrics.r2_score(np.reshape(PosZ,(nx,ny)),np.reshape(zp_Ridge_Terrain,(nx,ny)))
+    MSE_terrain_ridge = metrics.mean_squared_error(np.reshape(PosZ,(nx,ny)),np.reshape(zp_Ridge_Terrain,(nx,ny)))
+    print("\nRidge:")
+    print("MSE ridge terrain = %s, \nR2 score ridge terrain = %s" %(MSE_terrain_ridge,r2_terrain_ridge))
 
-    B_Lasso_Terrain = skl.Lasso(alpha=Tgamma, max_iter=10e4, tol = 0.01).fit(X_Terrain, PosZ)
-    # zp_Lasso = clf_lasso.predict(X_Terrain)
-    zp_Lasso = B_Lasso_Terrain.predict(X_Terrain)
-    zp_Lasso_Terrain = zp_Lasso.reshape(ny,nx)
+    #Plots the approximation of the terrain with Lasso: warning could be slow
+    if UseLasso == True:
+        print("\nUsing lasso regression on the terraindata, All other tasks completed")
+        B_Lasso_Terrain = skl.Lasso(alpha=Tgamma, max_iter=10e4, tol = 0.01).fit(X_Terrain, PosZ)
+        zp_Lasso = B_Lasso_Terrain.predict(X_Terrain)
+        zp_Lasso_Terrain = zp_Lasso.reshape(ny,nx)
+        plt.figure()
+        plt.imshow( zp_Lasso_Terrain , cmap='gray')
 
-    plt.figure()
-    plt.imshow( zp_Lasso_Terrain , cmap='gray')
-    print(zp_Lasso_Terrain)
+        r2_terrain_lasso = metrics.r2_score(np.reshape(PosZ,(nx,ny)),np.reshape(zp_Lasso_Terrain,(nx,ny)))
+        MSE_terrain_lasso = metrics.mean_squared_error(np.reshape(PosZ,(nx,ny)),np.reshape(zp_Lasso_Terrain,(nx,ny)))
+        print("\nLasso:")
+        print("MSE lasso terrain = %s, \nR2 score lasso terrain = %s" %(MSE_terrain_lasso,r2_terrain_lasso))
 
 
 
 if __name__ == "__main__":
     #Recommended not running both mains at the same time.
     main()
-    ##main2()
+    main2()
     plt.show()
