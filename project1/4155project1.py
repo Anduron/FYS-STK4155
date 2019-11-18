@@ -6,7 +6,6 @@ import numpy as np
 import sklearn.linear_model as skl
 from sklearn import metrics
 from sklearn.model_selection import cross_val_score, train_test_split, KFold
-from sklearn.preprocessing import PolynomialFeatures
 import scipy.linalg as scl
 import pandas as pd
 from imageio import imread
@@ -48,7 +47,7 @@ def DataImport(filename):
     #plt.figure()
     #plt.imshow(terrain1, cmap='gray')
     plt.figure()
-    plt.imshow(downscaled, cmap='gray')
+    plt.imshow(downscaled, cmap='viridis')
 
     return downscaled
 
@@ -219,9 +218,9 @@ def main():
 
     #Parameters, could have been arranged as input arguments
     n = 50
-    noise = 0.5
+    noise = 0.1
     test_S = 0.3
-    degree = 12
+    degree = 26
     k = 5
     deg_max = 12 #20
     lmb = 0.0001
@@ -248,7 +247,7 @@ def main():
     #Generating the Design Matrix
     X_DM = X_DesignMatrix(x_1,y_1,degree)
 
-    print("Points = %s, Degree = %s, $\\lambda$ = %s, $\\gamma$ = %s" %(n*n,degree,lmb,gamma))
+    print("Points = %s, Degree = %s, Noise = %s, $\\lambda$ = %s, $\\gamma$ = %s" %(n*n,degree,noise,lmb,gamma))
 
     #Calls for solving tasks with OLS
     B = Coeff(X_DM,z_1)
@@ -363,7 +362,7 @@ def main2():
     B_OLS_Terrain = Coeff(X_Terrain, PosZ)
     zp_OLS_Terrain = np.dot(X_Terrain,B_OLS_Terrain).reshape(ny,nx)
     plt.figure()
-    plt.imshow( zp_OLS_Terrain , cmap="gray")
+    plt.imshow( zp_OLS_Terrain , cmap="viridis")
 
     r2_terrain_OLS = metrics.r2_score(np.reshape(PosZ,(nx,ny)),np.reshape(zp_OLS_Terrain,(nx,ny)))
     MSE_terrain_OLS = metrics.mean_squared_error(np.reshape(PosZ,(nx,ny)),np.reshape(zp_OLS_Terrain,(nx,ny)))
@@ -374,7 +373,7 @@ def main2():
     B_Ridge_Terrain = CoeffRidge(X_Terrain, PosZ, Tlambda)
     zp_Ridge_Terrain = np.dot(X_Terrain,B_Ridge_Terrain).reshape(ny,nx)
     plt.figure()
-    plt.imshow( zp_Ridge_Terrain , cmap="gray")
+    plt.imshow( zp_Ridge_Terrain , cmap="viridis")
 
     r2_terrain_ridge = metrics.r2_score(np.reshape(PosZ,(nx,ny)),np.reshape(zp_Ridge_Terrain,(nx,ny)))
     MSE_terrain_ridge = metrics.mean_squared_error(np.reshape(PosZ,(nx,ny)),np.reshape(zp_Ridge_Terrain,(nx,ny)))
@@ -388,7 +387,7 @@ def main2():
         zp_Lasso = B_Lasso_Terrain.predict(X_Terrain)
         zp_Lasso_Terrain = zp_Lasso.reshape(ny,nx)
         plt.figure()
-        plt.imshow( zp_Lasso_Terrain , cmap='gray')
+        plt.imshow( zp_Lasso_Terrain , cmap='viridis')
 
         r2_terrain_lasso = metrics.r2_score(np.reshape(PosZ,(nx,ny)),np.reshape(zp_Lasso_Terrain,(nx,ny)))
         MSE_terrain_lasso = metrics.mean_squared_error(np.reshape(PosZ,(nx,ny)),np.reshape(zp_Lasso_Terrain,(nx,ny)))
@@ -400,5 +399,5 @@ def main2():
 if __name__ == "__main__":
     #Recommended not running both mains at the same time.
     main()
-    main2()
+    #main2()
     plt.show()

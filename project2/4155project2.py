@@ -74,6 +74,13 @@ def main():
 
     df.rename(index=str, columns={"default payment next month": "defaultPaymentNextMonth"}, inplace = True)
 
+    y_check = df.loc[:, df.columns == "defaultPaymentNextMonth"].values
+    i = 0
+    for j in range(len(y_check)):
+        if y_check[j] == 0:
+            i+=1
+    print(i/len(y_check))
+
     df = df.drop(df[(df.BILL_AMT1 == 0)&
                     (df.BILL_AMT2 == 0)&
                     (df.BILL_AMT3 == 0)&
@@ -87,6 +94,13 @@ def main():
                     (df.PAY_AMT4 == 0)&
                     (df.PAY_AMT5 == 0)&
                     (df.PAY_AMT6 == 0)].index)
+
+    y_check = df.loc[:, df.columns == "defaultPaymentNextMonth"].values
+    i = 0
+    for j in range(len(y_check)):
+        if y_check[j] == 0:
+            i+=1
+    print(i/len(y_check))
 
     X = df.loc[:, df.columns != "defaultPaymentNextMonth"].values
     y = df.loc[:, df.columns == "defaultPaymentNextMonth"].values

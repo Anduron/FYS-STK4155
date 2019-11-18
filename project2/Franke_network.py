@@ -10,6 +10,7 @@ from sklearn.preprocessing import StandardScaler
 import scipy.linalg as scl
 import pandas as pd
 from imageio import imread
+import seaborn as sns
 import sys
 from NN import *
 
@@ -75,10 +76,11 @@ def main():
     """
     np.random.seed(42) #The meaning of live
 
-    n = 100
+    n = 50
 
     #The dataset
-    X, x, y, z = Franke_dataset(n)#,0)
+    X, x, y, z = Franke_dataset(n,0.1)#,0)
+    print(X)
     #X = StandardScaler(X); y = StandardScaler(y); y = StandardScaler(y); z = StandardScaler(z)
     X_true, x_true, y_true, z_true = Franke_dataset(n,0)
     #X_true = StandardScaler(X); x_true = StandardScaler(x_true); y_true = StandardScaler(y_true); z_true = StandardScaler(z)
@@ -86,8 +88,8 @@ def main():
     plotting_function(x,y,z,n)
     plt.show()
 
-    X_train, X_test, Z_train, Z_test = train_test_split(X,z,test_size=0.3)
-    X_TRtrue, X_TEtrue, Z_TRtrue, Z_TEtrue = train_test_split(X_true,z_true,test_size=0.3)
+    X_train, X_test, Z_train, Z_test = train_test_split(X,z,test_size=0.2)
+    #X_TRtrue, X_TEtrue, Z_TRtrue, Z_TEtrue = train_test_split(X_true,z_true,test_size=0.3)
 
     print(len(X_train)+len(X_test))
 
@@ -95,22 +97,22 @@ def main():
     batch_size = 100
     hidden_neurons = 100
     categories = 10
-    max_iter = 100
-    error_min = 0.01
-    eta_vals = np.logspace(-7, 1, 9)
+    max_iter = 1000
+    error_min = 0.0001
+    eta_vals = np.logspace(-4, -2, 10) #np.linspace(0.0015,0.0025,10)
     lmbd = 0
     #alpha_vals = np.logspace(-5, 1, 7)
     # store the models for later use
     DNN_numpy = np.zeros((len(eta_vals)), dtype=object)
     print(len(X_train), len(Z_train))
-    layers = [2, 10, 1]
-    activations = ["sigmoid","linear"]#,"sigmoid","sigmoid","softmax"]
+    layers = [2, 100,20,5, 1]
+    activations = ["tanh","tanh","sigmoid","linear"]#,"sigmoid","sigmoid","softmax"]
     #print(len(activations))
 
     # grid search
     for i, eta in enumerate(eta_vals):
         alpha = 0.1
-        dnn = NeuralNetwork(X_TRtrue,Z_TRtrue.reshape((len(Z_train),1)),layers, activations,
+        dnn = NeuralNetwork(X_train,Z_train.reshape((len(Z_train),1)),layers, activations,
         epochs=epochs, batches=batch_size, max_iter=max_iter,
         error_min=error_min, eta=eta, lmbd=lmbd, alpha=alpha)
         """
@@ -126,14 +128,21 @@ def main():
         """
         #dnn = NeuralNetwork(X_train, Y_train_onehot)#, hidden_neurons=hidden_neurons, categories=categories, learningrate=learningrate, lmbd=lmbd, epochs=epochs, batches=batches, max_iter=max_iter, error_min=error_min)
         dnn.SGD()
-        test_predict = dnn.predict(X_TEtrue)#.reshape((len(X_test),1)))
+        test_predict = dnn.predict(X)#.reshape((len(X_test),1)))
         DNN_numpy[i] = dnn
 
         print("Learning rate  = ", eta)
         print("Lambda = ", lmbd)
-        print("Accuracy score on test set: ", metrics.r2_score(Z_test, test_predict))
+        print("R2 score on test set: ", metrics.r2_score(z, test_predict))
+        print("MSE on test set: ", metrics.mean_squared_error(z, test_predict))
         print()
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection="3d")
 
+        ax.plot_surface(x, y, test_predict.reshape((n,n)))
+        ax.set_title("Prediction of Franke's function")
+
+        plt.show()
 
     sns.set()
 
